@@ -89,6 +89,7 @@ struct ContentView: View {
     @State private var spinOffset: CGFloat = 0
     @State private var isDarkMode = true
     @State private var isGlowing = false
+    @State private var showingHowToPlay = false
     @AppStorage("darkMode") private var persistentDarkMode = true
     
     private var currentRuleList: RuleList {
@@ -141,6 +142,10 @@ struct ContentView: View {
             if selectedRuleListIndex >= ruleLists.count {
                 selectedRuleListIndex = 0
             }
+        }
+        .sheet(isPresented: $showingHowToPlay) {
+            HowToPlayView()
+                .preferredColorScheme(.dark)
         }
     }
     
@@ -460,10 +465,10 @@ struct ContentView: View {
                 )
             }
             
-            Button(action: {}) {
+            Button(action: { showingHowToPlay.toggle() }) {
                 HStack {
-                    Image(systemName: "info.circle")
-                    Text("About")
+                    Image(systemName: "questionmark.circle")
+                    Text("How to Play")
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundColor(.white)
@@ -965,5 +970,125 @@ struct RulesManagementView: View {
         var currentRules = rulesBinding.wrappedValue
         currentRules.move(fromOffsets: source, toOffset: destination)
         rulesBinding.wrappedValue = currentRules
+    }
+}
+
+struct HowToPlayView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    VStack(spacing: 10) {
+                        Text("🎰 How to Play 🎰")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.yellow, .orange],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                        
+                        Text("Yu-Gi-Oh! Rule Generator")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 10)
+                    
+                    // Instructions sections
+                    instructionSection(
+                        title: "🎲 Basic Rules",
+                        content: """
+                        [Add your basic game rules here]
+                        
+                        • Point 1
+                        • Point 2  
+                        • Point 3
+                        """
+                    )
+                    
+                    instructionSection(
+                        title: "🎮 How to Use the App",
+                        content: """
+                        [Add instructions on how to use your app here]
+                        
+                        1. Step 1
+                        2. Step 2
+                        3. Step 3
+                        """
+                    )
+                    
+                    instructionSection(
+                        title: "⚙️ Managing Rule Lists",
+                        content: """
+                        [Add information about managing custom rule lists]
+                        
+                        • How to create new lists
+                        • How to edit rules
+                        • How to duplicate lists
+                        """
+                    )
+                    
+                    instructionSection(
+                        title: "🎯 Game Tips",
+                        content: """
+                        [Add any game tips or strategies here]
+                        
+                        • Tip 1
+                        • Tip 2
+                        • Tip 3
+                        """
+                    )
+                    
+                    // Footer
+                    VStack(spacing: 8) {
+                        Divider()
+                            .background(Color.gray)
+                        
+                        Text("Have fun dueling! 🔥")
+                            .font(.headline)
+                            .foregroundColor(.orange)
+                        
+                        Text("Version 1.0")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 20)
+                }
+                .padding()
+            }
+        }
+        .navigationTitle("How to Play")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    dismiss()
+                }
+            }
+        }
+    }
+    
+    private func instructionSection(title: String, content: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            Text(content)
+                .font(.system(size: 16))
+                .foregroundColor(.secondary)
+                .lineSpacing(2)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.gray.opacity(0.1))
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+        )
     }
 }
