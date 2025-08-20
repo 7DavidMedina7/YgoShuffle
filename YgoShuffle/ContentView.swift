@@ -88,6 +88,7 @@ struct ContentView: View {
     @State private var slotRules: [String] = []
     @State private var spinOffset: CGFloat = 0
     @State private var isDarkMode = true
+    @State private var isGlowing = false
     @AppStorage("darkMode") private var persistentDarkMode = true
     
     private var currentRuleList: RuleList {
@@ -155,7 +156,7 @@ struct ContentView: View {
     
     private var headerView: some View {
         VStack(spacing: 10) {
-            Text("Yu-Gi-Oh!")
+            Text("YGO Shuffle")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundStyle(titleGradient)
                 .shadow(color: .black.opacity(0.3), radius: 2, x: 2, y: 2)
@@ -303,7 +304,72 @@ struct ContentView: View {
             .foregroundColor(.white)
             .multilineTextAlignment(.center)
             .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isGlowing ? Color.yellow.opacity(0.1) : Color.clear)
+                    .shadow(
+                        color: isGlowing ? .yellow : .clear,
+                        radius: isGlowing ? 30 : 0
+                    )
+                    .shadow(
+                        color: isGlowing ? .orange : .clear,
+                        radius: isGlowing ? 20 : 0
+                    )
+                    .shadow(
+                        color: isGlowing ? .red : .clear,
+                        radius: isGlowing ? 15 : 0
+                    )
+                    .overlay(
+                        // Extra visible border when glowing
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isGlowing ? Color.yellow : Color.clear, lineWidth: 2)
+                    )
+            )
+            .scaleEffect(isGlowing ? 1.1 : 1.0)
             .transition(.scale.combined(with: .opacity))
+            .animation(.easeInOut(duration: 0.6), value: isGlowing)
+            .onChange(of: rule) { _, newRule in
+                print("🔄 Rule changed to: \(newRule)")
+                
+                // Reset glow state
+                isGlowing = false
+                print("❌ Glow reset to false")
+                
+                // Start glow effect after short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    print("✨ Starting glow animation")
+                    withAnimation(.easeInOut(duration: 0.6).repeatCount(4, autoreverses: true)) {
+                        isGlowing = true
+                    }
+                    print("🟡 isGlowing set to: \(isGlowing)")
+                    
+                    // Stop glowing after animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+                        print("🔚 Stopping glow animation")
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            isGlowing = false
+                        }
+                    }
+                }
+            }
+            .onAppear {
+                print("👁️ selectedRuleView appeared with rule: \(rule)")
+                
+                // Trigger glow on first appearance
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    print("✨ Starting initial glow animation")
+                    withAnimation(.easeInOut(duration: 0.6).repeatCount(4, autoreverses: true)) {
+                        isGlowing = true
+                    }
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+                        print("🔚 Stopping initial glow animation")
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            isGlowing = false
+                        }
+                    }
+                }
+            }
     }
     
     private var placeholderView: some View {
@@ -466,6 +532,7 @@ struct ContentView: View {
                     } while finalRule == "Re-roll the generator."
                     
                     withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                        isGlowing = false // Reset glow state
                         selectedRule = finalRule
                         isSpinning = false
                     }
@@ -473,6 +540,7 @@ struct ContentView: View {
             } else {
                 // Final dramatic reveal
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                    isGlowing = false // Reset glow state
                     selectedRule = finalRule
                     isSpinning = false
                 }
