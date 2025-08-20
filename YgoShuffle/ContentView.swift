@@ -532,6 +532,7 @@ struct SlotMachineView: View {
 }
 
 // Rule List Management View
+// Rule List Management View with Duplicate Functionality
 struct RuleListManagementView: View {
     @Binding var ruleLists: [RuleList]
     @Binding var selectedListIndex: Int
@@ -578,10 +579,20 @@ struct RuleListManagementView: View {
                             }
                             .disabled(ruleLists.count == 1) // Don't allow deleting the last list
                         }
+                        .swipeActions(edge: .leading) {
+                            Button("Duplicate") {
+                                duplicateRuleList(at: index)
+                            }
+                            .tint(.blue)
+                        }
                         .contextMenu {
                             Button("Select as Active") {
                                 selectedListIndex = index
                                 onSave()
+                            }
+                            
+                            Button("Duplicate") {
+                                duplicateRuleList(at: index)
                             }
                             
                             if ruleLists.count > 1 {
@@ -592,6 +603,10 @@ struct RuleListManagementView: View {
                         }
                     }
                     .onMove(perform: moveRuleList)
+                }
+                
+                Section(footer: Text("Tip: Swipe left on a list to duplicate it, or swipe right to delete it.")) {
+                    EmptyView()
                 }
             }
             .navigationTitle("Rule Lists")
@@ -632,6 +647,67 @@ struct RuleListManagementView: View {
         ruleLists.append(newList)
         onSave()
         newListName = ""
+    }
+    
+    func duplicateRuleList(at index: Int) {
+        guard index < ruleLists.count else { return }
+        
+        let originalList = ruleLists[index]
+        let duplicatedName = generateDuplicateName(from: originalList.name)
+        let duplicatedList = RuleList(name: duplicatedName, rules: originalList.rules)
+        
+        // Insert the duplicated list right after the original
+        ruleLists.insert(duplicatedList, at: index + 1)
+        
+        // Update selected index if needed
+        if index < selectedListIndex {
+            selectedListIndex += 1
+        }
+        
+        onSave()
+    }
+    
+    private func generateDuplicateName(from originalName: String) -> String {
+        let baseName: String
+        let copyNumber: Int
+        
+        // Check if the name already has a "Copy" suffix with a number
+        let copyPattern = #"^(.*?)(?: Copy(?: (\d+))?)?$"#
+        if let regex = try? NSRegularExpression(pattern: copyPattern),
+           let match = regex.firstMatch(in: originalName, range: NSRange(originalName.startIndex..., in: originalName)) {
+            
+            if let baseRange = Range(match.range(at: 1), in: originalName) {
+                baseName = String(originalName[baseRange]).trimmingCharacters(in: .whitespaces)
+                
+                if let numberRange = Range(match.range(at: 2), in: originalName),
+                   let number = Int(originalName[numberRange]) {
+                    copyNumber = number + 1
+                } else if originalName.contains("Copy") {
+                    copyNumber = 2
+                } else {
+                    copyNumber = 1
+                }
+            } else {
+                baseName = originalName
+                copyNumber = 1
+            }
+        } else {
+            baseName = originalName
+            copyNumber = 1
+        }
+        
+        // Generate the new name
+        let newName = copyNumber == 1 ? "\(baseName) Copy" : "\(baseName) Copy \(copyNumber)"
+        
+        // Check if this name already exists and increment if needed
+        var finalName = newName
+        var counter = copyNumber
+        while ruleLists.contains(where: { $0.name == finalName }) {
+            counter += 1
+            finalName = "\(baseName) Copy \(counter)"
+        }
+        
+        return finalName
     }
     
     func deleteRuleList(at index: Int) {
