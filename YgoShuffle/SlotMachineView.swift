@@ -11,7 +11,7 @@ struct SlotMachineView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "suit.diamond")
                             .font(.system(size: 9))
-                            .foregroundStyle(index.isMultiple(of: 2) ? .cyan : .purple)
+                            .foregroundStyle(index.isMultiple(of: 2) ? .cyan : .blue)
                         Text(rule)
                             .font(.system(size: 12, weight: .medium, design: .rounded))
                             .foregroundStyle(.white.opacity(0.85))
@@ -20,7 +20,7 @@ struct SlotMachineView: View {
                     }
                     .padding(.horizontal, 10)
                     .frame(height: CGFloat(SpinReelPlan.rowHeight))
-                    .background(index.isMultiple(of: 2) ? Color.cyan.opacity(0.04) : Color.purple.opacity(0.06))
+                    .background(index.isMultiple(of: 2) ? Color.cyan.opacity(0.04) : Color.blue.opacity(0.06))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .top)

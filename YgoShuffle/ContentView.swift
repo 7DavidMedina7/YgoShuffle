@@ -212,9 +212,9 @@ struct ContentView: View {
     private var utilityControls: some View {
         HStack(spacing: 6) {
             utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.12, green: 0.32, blue: 0.75)) { showingRuleLists = true }
-            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 0.58, green: 0.16, blue: 0.58)) { showingHistory = true }
+            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 0.65, green: 0.12, blue: 0.18)) { showingHistory = true }
             utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.10, green: 0.40, blue: 0.25)) { showingHowToPlay = true }
-            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.32, green: 0.23, blue: 0.62)) { showingSettings = true }
+            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.08, green: 0.27, blue: 0.50)) { showingSettings = true }
         }
         .padding(.horizontal, 16)
     }

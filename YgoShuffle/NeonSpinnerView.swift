@@ -15,7 +15,7 @@ struct NeonSpinnerView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let cyan = Color(red: 0.25, green: 0.9, blue: 1)
-    private let violet = Color(red: 0.65, green: 0.35, blue: 1)
+    private let electricBlue = Color(red: 0.10, green: 0.45, blue: 1)
     private var rerolling: Bool { isSpinning && selectedRule == "🎲 RE-ROLLING! 🎲" }
 
     var body: some View {
@@ -53,7 +53,7 @@ struct NeonSpinnerView: View {
                 .padding(.horizontal, 20)
                 .frame(minHeight: 52)
                 .background(
-                    canSpin && !isSpinning ? Color(red: 0.75, green: 0.24, blue: 0.08) :
+                    canSpin && !isSpinning ? Color(red: 0.78, green: 0.08, blue: 0.12) :
                         Color(red: 0.20, green: 0.20, blue: 0.22),
                     in: RoundedRectangle(cornerRadius: 18)
                 )
@@ -61,7 +61,7 @@ struct NeonSpinnerView: View {
                     RoundedRectangle(cornerRadius: 18)
                         .strokeBorder(.white.opacity(0.25), lineWidth: 1)
                 }
-                .shadow(color: canSpin && !isSpinning ? Color.orange.opacity(0.2) : .clear, radius: 16, y: 6)
+                .shadow(color: canSpin && !isSpinning ? Color.red.opacity(0.2) : .clear, radius: 16, y: 6)
             }
             .buttonStyle(.plain)
             .disabled(isSpinning || !canSpin)
@@ -74,9 +74,9 @@ struct NeonSpinnerView: View {
                 .fill(Color.black)
                 .overlay {
                     RoundedRectangle(cornerRadius: 28)
-                        .strokeBorder(violet.opacity(0.5), lineWidth: 1)
+                        .strokeBorder(electricBlue.opacity(0.5), lineWidth: 1)
                 }
-                .shadow(color: violet.opacity(0.16), radius: 24, y: 10)
+                .shadow(color: electricBlue.opacity(0.16), radius: 24, y: 10)
         }
         .padding(.horizontal)
     }
@@ -99,10 +99,10 @@ struct NeonSpinnerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay {
             RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(LinearGradient(colors: [cyan.opacity(isSpinning ? 0.8 : 0.35), violet.opacity(0.65)],
+                .strokeBorder(LinearGradient(colors: [cyan.opacity(isSpinning ? 0.8 : 0.35), electricBlue.opacity(0.65)],
                                              startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.5)
         }
-        .shadow(color: (isSpinning ? cyan : violet).opacity(0.18), radius: 16)
+        .shadow(color: (isSpinning ? cyan : electricBlue).opacity(0.18), radius: 16)
     }
 
     private var spinningReel: some View {
@@ -155,7 +155,7 @@ struct NeonSpinnerView: View {
                 .overlay {
                     Image(systemName: "suit.diamond.fill")
                         .font(.system(size: 38, weight: .light))
-                        .foregroundStyle(LinearGradient(colors: [cyan, violet], startPoint: .top, endPoint: .bottom))
+                        .foregroundStyle(LinearGradient(colors: [cyan, electricBlue], startPoint: .top, endPoint: .bottom))
                         .shadow(color: cyan.opacity(0.7), radius: 16)
                 }
                 .accessibilityHidden(true)
@@ -242,11 +242,11 @@ private struct NeonOrbitView: View {
             ZStack {
                 Circle().stroke(.white.opacity(0.07), lineWidth: 1)
                 Circle().trim(from: 0.05, to: 0.8)
-                    .stroke(AngularGradient(colors: [.cyan, .purple, .clear], center: .center),
+                    .stroke(AngularGradient(colors: [.cyan, .blue, .clear], center: .center),
                             style: StrokeStyle(lineWidth: 2, lineCap: .round))
                     .rotationEffect(.degrees(angle))
                 Circle().trim(from: 0.15, to: 0.65)
-                    .stroke(.purple.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 6]))
+                    .stroke(.blue.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 6]))
                     .padding(12)
                     .rotationEffect(.degrees(-angle))
                 Circle().fill(.cyan).frame(width: 5, height: 5).offset(y: -45)
