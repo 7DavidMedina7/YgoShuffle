@@ -65,3 +65,7 @@ Instagram: [@_davey_wavey_](https://www.instagram.com/_davey_wavey_/)
 ## Disclaimer
 
 YGO Shuffle is an unofficial fan-made companion project and is not affiliated with or endorsed by Konami. Yu-Gi-Oh! is a trademark of its respective owners.
+
+### Rule history
+
+Tap **Rule History** on the generator screen to see your last 100 completed spins, newest first. Each result includes the rule, the source list name at the time of the spin, and its date and time. History is saved on your device across app launches. Canceled spins and re-roll messages are not recorded. Use **Clear** in the history screen and confirm to remove all saved results.

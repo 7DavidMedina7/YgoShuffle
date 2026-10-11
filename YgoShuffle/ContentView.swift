@@ -27,6 +27,8 @@ struct ContentView: View {
     @State private var isDarkMode = true
     @State private var isGlowing = false
     @State private var showingHowToPlay = false
+    @State private var showingHistory = false
+    @State private var history = RuleHistory()
     @AppStorage("darkMode") private var persistentDarkMode = true
     
     private var currentRuleList: RuleList {
@@ -57,6 +59,7 @@ struct ContentView: View {
                         ruleListSelector
                         slotMachineContainer
                         controlButtons
+                        historyButton
                         Spacer(minLength: 20)
                     }
                 }
@@ -84,6 +87,10 @@ struct ContentView: View {
             cancelSpin()
         }
         .onDisappear { cancelSpin() }
+        .sheet(isPresented: $showingHistory) {
+            RuleHistoryView(entries: history.entries, onClear: { history.clear() })
+                .preferredColorScheme(.dark)
+        }
         .sheet(isPresented: $showingHowToPlay) {
             HowToPlayView()
                 .preferredColorScheme(.dark)
@@ -425,10 +432,26 @@ struct ContentView: View {
         .padding(.horizontal)
     }
     
+    private var historyButton: some View {
+        Button(action: { showingHistory = true }) {
+            Label("Rule History", systemImage: "clock.arrow.circlepath")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 45)
+                .background(
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(Color.purple.opacity(0.8))
+                )
+        }
+        .padding(.horizontal)
+    }
+
     // Pick random rule with slot machine animation
     func pickRandomRule() {
         guard !isSpinning else { return }
-        let rules = currentRuleList.rules
+        let sourceList = currentRuleList
+        let rules = sourceList.rules
         guard let outcome = RuleGenerator.pick(from: rules) else {
             selectedRule = "No playable rules available. Add a rule other than Re-roll the generator."
             return
@@ -479,15 +502,16 @@ struct ContentView: View {
                 spinOffset = 0
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     guard spinID == token else { return }
-                    finishSpin(with: outcome.rule)
+                    finishSpin(with: outcome.rule, list: sourceList)
                 }
             } else {
-                finishSpin(with: outcome.rule)
+                finishSpin(with: outcome.rule, list: sourceList)
             }
         }
     }
 
-    private func finishSpin(with rule: String) {
+    private func finishSpin(with rule: String, list: RuleList) {
+        history.record(rule: rule, list: list)
         withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
             isGlowing = false
             selectedRule = rule
