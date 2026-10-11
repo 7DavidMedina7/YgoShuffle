@@ -28,6 +28,7 @@ struct ContentView: View {
     @State private var isGlowing = false
     @State private var showingHowToPlay = false
     @State private var showingHistory = false
+    @State private var showingFilters = false
     @State private var history = RuleHistory()
     @AppStorage("darkMode") private var persistentDarkMode = true
     
@@ -57,6 +58,7 @@ struct ContentView: View {
                     VStack(spacing: 30) {
                         headerView
                         ruleListSelector
+                        filterButton
                         slotMachineContainer
                         controlButtons
                         historyButton
@@ -83,10 +85,23 @@ struct ContentView: View {
             cancelSpin()
             saveSelectedList()
         }
-        .onChange(of: ruleLists.map { $0.rules }) { _, _ in
+        .onChange(of: ruleLists) { _, _ in
             cancelSpin()
         }
         .onDisappear { cancelSpin() }
+        .sheet(isPresented: $showingFilters) {
+            RuleCategoryFilterView(
+                ruleList: Binding(
+                    get: { currentRuleList },
+                    set: { updatedList in
+                        guard let index = ruleLists.firstIndex(where: { $0.id == updatedList.id }) else { return }
+                        ruleLists[index] = updatedList
+                        saveRuleLists()
+                    }
+                )
+            )
+            .preferredColorScheme(.dark)
+        }
         .sheet(isPresented: $showingHistory) {
             RuleHistoryView(entries: history.entries, onClear: { history.clear() })
                 .preferredColorScheme(.dark)
@@ -162,7 +177,7 @@ struct ContentView: View {
                         Text(currentRuleList.name)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
-                        Text("\(currentRuleList.rules.count) rules")
+                        Text("\(currentRuleList.eligibleRules.count) of \(currentRuleList.rules.count) rules enabled")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.7))
                     }
@@ -340,7 +355,7 @@ struct ContentView: View {
         Button(action: pickRandomRule) {
             spinButtonContent
         }
-        .disabled(isSpinning || currentRuleList.rules.isEmpty)
+        .disabled(isSpinning || currentRuleList.eligibleRules.isEmpty)
     }
     
     private var spinButtonContent: some View {
@@ -364,7 +379,7 @@ struct ContentView: View {
     }
     
     private var spinButtonText: some View {
-        Text(currentRuleList.rules.isEmpty ? "NO RULES AVAILABLE" : (isSpinning ? "SPINNING..." : "SPIN FOR RULE"))
+        Text(currentRuleList.eligibleRules.isEmpty ? "NO ENABLED RULES" : (isSpinning ? "SPINNING..." : "SPIN FOR RULE"))
             .font(.system(size: 18, weight: .bold, design: .rounded))
     }
     
@@ -376,7 +391,7 @@ struct ContentView: View {
     
     private var spinButtonGradient: LinearGradient {
         LinearGradient(
-            colors: currentRuleList.rules.isEmpty ?
+            colors: currentRuleList.eligibleRules.isEmpty ?
                 [.gray.opacity(0.3), .gray.opacity(0.2)] :
                 (isSpinning ?
                     [.gray.opacity(0.6), .gray.opacity(0.4)] :
@@ -432,6 +447,16 @@ struct ContentView: View {
         .padding(.horizontal)
     }
     
+    private var filterButton: some View {
+        Button(action: { showingFilters = true }) {
+            Label("Categories: \(currentRuleList.enabledCategories.count) of \(RuleCategory.allCases.count) enabled",
+                  systemImage: "line.3.horizontal.decrease.circle")
+                .font(.subheadline)
+                .foregroundColor(.yellow)
+        }
+        .padding(.horizontal)
+    }
+
     private var historyButton: some View {
         Button(action: { showingHistory = true }) {
             Label("Rule History", systemImage: "clock.arrow.circlepath")
@@ -451,7 +476,7 @@ struct ContentView: View {
     func pickRandomRule() {
         guard !isSpinning else { return }
         let sourceList = currentRuleList
-        let rules = sourceList.rules
+        let rules = sourceList.eligibleRules
         guard let outcome = RuleGenerator.pick(from: rules) else {
             selectedRule = "No playable rules available. Add a rule other than Re-roll the generator."
             return

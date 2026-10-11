@@ -7,11 +7,11 @@ struct YgoShuffleTests {
         var list = RuleList(name: "Custom", rules: ["Draw", "Draw"])
         let id = list.id
         list.name = "Renamed"
-        list.rules.append("Discard")
+        list.rules.append(Rule(text: "Discard"))
         let decoded = try JSONDecoder().decode(RuleList.self, from: JSONEncoder().encode(list))
         #expect(decoded == list)
         #expect(decoded.id == id)
-        #expect(RuleList(name: list.name, rules: list.rules).id != id)
+        #expect(RuleList(name: list.name, entries: list.rules).id != id)
     }
 
     @Test func legacyListWithoutIDMigratesAndKeepsItsRules() throws {
@@ -19,7 +19,7 @@ struct YgoShuffleTests {
         let migrated = try JSONDecoder().decode(RuleList.self, from: data)
         let reloaded = try JSONDecoder().decode(RuleList.self, from: JSONEncoder().encode(migrated))
         #expect(reloaded.id == migrated.id)
-        #expect(reloaded.rules == ["Draw", "Draw"])
+        #expect(reloaded.rules.map { $0.text } == ["Draw", "Draw"])
     }
 
     @Test func selectionMigrationReorderingAndDeletion() throws {
