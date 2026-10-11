@@ -25,7 +25,8 @@ struct ContentView: View {
     @State private var slotRules: [String] = []
     @State private var spinOffset: CGFloat = 0
     @State private var isDarkMode = true
-    @State private var isGlowing = false
+    @State private var revealID = UUID()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingHowToPlay = false
     @State private var showingHistory = false
     @State private var showingFilters = false
@@ -210,218 +211,18 @@ struct ContentView: View {
     }
     
     private var slotMachineContainer: some View {
-        VStack(spacing: 20) {
-            slotMachineDisplay
-            spinButton
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 25)
-        .background(containerBackground)
-        .padding(.horizontal)
-    }
-    
-    private var slotMachineDisplay: some View {
-        VStack {
-            Text("🎰 RULE SLOT 🎰")
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding(.bottom, 5)
-            
-            slotWindow
-        }
-    }
-    
-    private var slotWindow: some View {
-        RoundedRectangle(cornerRadius: 15)
-            .fill(Color.black.opacity(0.95))
-            .frame(height: 200)
-            .overlay(slotWindowBorder)
-            .overlay(slotContent)
-            .overlay(
-                // Casino-style slot machine lines
-                VStack {
-                    Divider()
-                        .background(Color.yellow.opacity(0.3))
-                    Spacer()
-                    Divider()
-                        .background(Color.yellow.opacity(0.3))
-                    Spacer()
-                    Divider()
-                        .background(Color.yellow.opacity(0.3))
-                }
-                .padding(.vertical, 20)
-            )
-            .clipped()
-    }
-    
-    private var slotWindowBorder: some View {
-        RoundedRectangle(cornerRadius: 15)
-            .stroke(slotBorderGradient, lineWidth: 3)
-    }
-    
-    private var slotBorderGradient: LinearGradient {
-        LinearGradient(
-            colors: [.yellow, .orange, .red],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+        NeonSpinnerView(
+            rules: slotRules,
+            offset: spinOffset,
+            selectedRule: selectedRule,
+            isSpinning: isSpinning,
+            canSpin: !currentRuleList.eligibleRules.isEmpty,
+            quickSpin: spinPreferences.quickSpinEnabled,
+            revealID: revealID,
+            onSpin: pickRandomRule
         )
     }
-    
-    @ViewBuilder
-    private var slotContent: some View {
-        if isSpinning {
-            SlotMachineView(rules: slotRules, offset: spinOffset)
-        } else if let selectedRule = selectedRule {
-            selectedRuleView(selectedRule)
-        } else {
-            placeholderView
-        }
-    }
-    
-    private func selectedRuleView(_ rule: String) -> some View {
-        Text(rule)
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(.white)
-            .multilineTextAlignment(.center)
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isGlowing ? Color.yellow.opacity(0.1) : Color.clear)
-                    .shadow(
-                        color: isGlowing ? .yellow : .clear,
-                        radius: isGlowing ? 30 : 0
-                    )
-                    .shadow(
-                        color: isGlowing ? .orange : .clear,
-                        radius: isGlowing ? 20 : 0
-                    )
-                    .shadow(
-                        color: isGlowing ? .red : .clear,
-                        radius: isGlowing ? 15 : 0
-                    )
-                    .overlay(
-                        // Extra visible border when glowing
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isGlowing ? Color.yellow : Color.clear, lineWidth: 2)
-                    )
-            )
-            .scaleEffect(isGlowing ? 1.1 : 1.0)
-            .transition(.scale.combined(with: .opacity))
-            .animation(.easeInOut(duration: 0.6), value: isGlowing)
-            .onChange(of: rule) { _, newRule in
-                print("🔄 Rule changed to: \(newRule)")
-                
-                // Reset glow state
-                isGlowing = false
-                print("❌ Glow reset to false")
-                
-                // Start glow effect after short delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    print("✨ Starting glow animation")
-                    withAnimation(.easeInOut(duration: 0.6).repeatCount(4, autoreverses: true)) {
-                        isGlowing = true
-                    }
-                    print("🟡 isGlowing set to: \(isGlowing)")
-                    
-                    // Stop glowing after animation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
-                        print("🔚 Stopping glow animation")
-                        withAnimation(.easeOut(duration: 0.5)) {
-                            isGlowing = false
-                        }
-                    }
-                }
-            }
-            .onAppear {
-                print("👁️ selectedRuleView appeared with rule: \(rule)")
-                
-                // Trigger glow on first appearance
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    print("✨ Starting initial glow animation")
-                    withAnimation(.easeInOut(duration: 0.6).repeatCount(4, autoreverses: true)) {
-                        isGlowing = true
-                    }
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
-                        print("🔚 Stopping initial glow animation")
-                        withAnimation(.easeOut(duration: 0.5)) {
-                            isGlowing = false
-                        }
-                    }
-                }
-            }
-    }
-    
-    private var placeholderView: some View {
-        VStack {
-            Image(systemName: "questionmark.circle.fill")
-                .font(.system(size: 40))
-                .foregroundColor(.gray)
-            Text("Press the button to spin!")
-                .font(.caption)
-                .foregroundColor(.gray)
-        }
-    }
-    
-    private var spinButton: some View {
-        Button(action: pickRandomRule) {
-            spinButtonContent
-        }
-        .disabled(isSpinning || currentRuleList.eligibleRules.isEmpty)
-    }
-    
-    private var spinButtonContent: some View {
-        HStack {
-            spinButtonIcon
-            spinButtonText
-        }
-        .foregroundColor(.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 55)
-        .background(spinButtonBackground)
-        .scaleEffect(isSpinning ? 0.95 : 1.0)
-        .animation(.easeInOut(duration: 0.1), value: isSpinning)
-    }
-    
-    private var spinButtonIcon: some View {
-        Image(systemName: isSpinning ? "arrow.2.circlepath" : "dice.fill")
-            .font(.title2)
-            .rotationEffect(.degrees(isSpinning ? 360 : 0))
-            .animation(.linear(duration: 0.5).repeatForever(autoreverses: false), value: isSpinning)
-    }
-    
-    private var spinButtonText: some View {
-        Text(currentRuleList.eligibleRules.isEmpty ? "NO ENABLED RULES" : (isSpinning ? "SPINNING..." : "SPIN FOR RULE"))
-            .font(.system(size: 18, weight: .bold, design: .rounded))
-    }
-    
-    private var spinButtonBackground: some View {
-        RoundedRectangle(cornerRadius: 25)
-            .fill(spinButtonGradient)
-            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
-    }
-    
-    private var spinButtonGradient: LinearGradient {
-        LinearGradient(
-            colors: currentRuleList.eligibleRules.isEmpty ?
-                [.gray.opacity(0.3), .gray.opacity(0.2)] :
-                (isSpinning ?
-                    [.gray.opacity(0.6), .gray.opacity(0.4)] :
-                    [.red.opacity(0.8), .orange.opacity(0.8)]),
-            startPoint: .leading,
-            endPoint: .trailing
-        )
-    }
-    
-    private var containerBackground: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(Color.white.opacity(0.1))
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.black.opacity(0.2))
-            )
-    }
-    
+
     private var controlButtons: some View {
         HStack(spacing: 20) {
             Button(action: { showingRuleLists.toggle() }) {
@@ -504,11 +305,12 @@ struct ContentView: View {
             selectedRule = "No playable rules available. Add a rule other than Re-roll the generator."
             return
         }
-        let duration = spinPreferences.spinDuration
-        let rerollDuration = spinPreferences.rerollDuration
+        let duration = reduceMotion ? 0.1 : spinPreferences.spinDuration
+        let rerollDuration = reduceMotion ? 0.1 : spinPreferences.rerollDuration
         let token = UUID()
         spinID = token
         
+        selectedRule = nil
         isSpinning = true
         spinFeedback.started(preferences: spinPreferences)
         
@@ -530,21 +332,23 @@ struct ContentView: View {
         
         slotRules = infiniteRules
         
-        // Start animation
-        withAnimation(.easeOut(duration: 0.1)) {
-            spinOffset = 0
+        // Reset without interpolation, then let the reel mount before scrolling.
+        var resetTransaction = Transaction()
+        resetTransaction.disablesAnimations = true
+        withTransaction(resetTransaction) { spinOffset = 0 }
+        let scrollDistance = max(0, totalPixelsToScroll - 150)
+        let reelMountDelay = reduceMotion ? 0.0 : 0.05
+        if !reduceMotion {
+            DispatchQueue.main.asyncAfter(deadline: .now() + reelMountDelay) {
+                guard spinID == token else { return }
+                withAnimation(.timingCurve(0.12, 0.65, 0.2, 1, duration: duration)) {
+                    spinOffset = -scrollDistance
+                }
+            }
         }
-        
-        // Fast scroll through the calculated distance
-        let scrollDistance = totalPixelsToScroll - 150
-        
-        // Scroll using the duration selected at the start of this spin.
-        withAnimation(.linear(duration: duration)) {
-            spinOffset = -scrollDistance
-        }
-        
+
         // Reveal only if this spin has not been canceled.
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + reelMountDelay + duration) {
             guard spinID == token else { return }
             if outcome.didReroll {
                 // Reveal the re-roll message while keeping the button locked.
@@ -564,8 +368,8 @@ struct ContentView: View {
     private func finishSpin(with rule: String, list: RuleList) {
         history.record(rule: rule, list: list)
         spinFeedback.revealed(preferences: spinPreferences)
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-            isGlowing = false
+        withAnimation(reduceMotion ? nil : .spring(response: 0.6, dampingFraction: 0.6)) {
+            revealID = UUID()
             selectedRule = rule
             isSpinning = false
         }
@@ -576,7 +380,7 @@ struct ContentView: View {
         spinID = UUID()
         isSpinning = false
         selectedRule = nil
-        isGlowing = false
+        revealID = UUID()
     }
     
     // Save to UserDefaults

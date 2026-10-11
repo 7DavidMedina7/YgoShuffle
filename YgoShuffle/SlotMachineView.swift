@@ -1,38 +1,31 @@
 import SwiftUI
 
-// Slot Machine Animation View
 struct SlotMachineView: View {
     let rules: [String]
     let offset: CGFloat
-    
+
     var body: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(rules.enumerated()), id: \.offset) { index, rule in
-                Text(rule)
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color.green.opacity(0.9))
-                    .multilineTextAlignment(.center)
+        GeometryReader { _ in
+            VStack(spacing: 0) {
+                ForEach(Array(rules.enumerated()), id: \.offset) { index, rule in
+                    HStack(spacing: 10) {
+                        Image(systemName: "suit.diamond")
+                            .font(.system(size: 9))
+                            .foregroundStyle(index.isMultiple(of: 2) ? .cyan : .purple)
+                        Text(rule)
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.85))
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 10)
                     .frame(height: 45)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.black.opacity(0.3),
-                                        Color.yellow.opacity(0.1),
-                                        Color.black.opacity(0.3)
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .opacity(Double(index % 3) * 0.3 + 0.1)
-                    )
+                    .background(index.isMultiple(of: 2) ? Color.cyan.opacity(0.04) : Color.purple.opacity(0.06))
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .offset(y: offset)
         }
-        .offset(y: offset)
+        .clipped()
     }
 }
-
