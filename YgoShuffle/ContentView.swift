@@ -186,9 +186,9 @@ struct ContentView: View {
                         .font(.title3)
                     Text("Filters").font(.system(size: 10, weight: .medium))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(.black)
                 .frame(width: 54, height: 58)
-                .background(Color(red: 0.0, green: 0.38, blue: 0.42), in: RoundedRectangle(cornerRadius: 14))
+                .background(Color(red: 1, green: 0.88, blue: 0.08), in: RoundedRectangle(cornerRadius: 14))
             }
             .accessibilityLabel("Rule category filters")
         }
@@ -211,15 +211,15 @@ struct ContentView: View {
 
     private var utilityControls: some View {
         HStack(spacing: 6) {
-            utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.12, green: 0.32, blue: 0.75)) { showingRuleLists = true }
-            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 0.65, green: 0.12, blue: 0.18)) { showingHistory = true }
-            utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.10, green: 0.40, blue: 0.25)) { showingHowToPlay = true }
-            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.08, green: 0.27, blue: 0.50)) { showingSettings = true }
+            utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.35, green: 0.76, blue: 1), textColor: .black) { showingRuleLists = true }
+            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 1, green: 0.55, blue: 0.08), textColor: .black) { showingHistory = true }
+            utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.25, green: 0.90, blue: 0.35), textColor: .black) { showingHowToPlay = true }
+            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.67, green: 0.25, blue: 1)) { showingSettings = true }
         }
         .padding(.horizontal, 16)
     }
 
-    private func utilityButton(_ title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func utilityButton(_ title: String, icon: String, color: Color, textColor: Color = .white, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 5) {
                 Image(systemName: icon).font(.system(size: 18))
@@ -228,7 +228,7 @@ struct ContentView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(textColor)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 48)
             .background(color, in: RoundedRectangle(cornerRadius: 12))
