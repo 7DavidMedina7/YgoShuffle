@@ -42,21 +42,9 @@ struct ContentView: View {
             ?? ruleLists.first ?? RuleList(name: "Empty", rules: [])
     }
     
-    let gradientColors = [
-        Color.purple.opacity(0.8),
-        Color.blue.opacity(0.8),
-        Color.indigo.opacity(0.8)
-    ]
-    
-    let darkGradientColors = [
-        Color.black,
-        Color.gray.opacity(0.9),
-        Color.black
-    ]
-    
     var body: some View {
         ZStack {
-            backgroundGradient
+            Color.black.ignoresSafeArea()
             
             GeometryReader { geometry in
                 let landscape = geometry.size.width > geometry.size.height
@@ -146,32 +134,14 @@ struct ContentView: View {
         }
     }
     
-    private var backgroundGradient: some View {
-        LinearGradient(
-            gradient: Gradient(colors: darkGradientColors),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-        .animation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true), value: isSpinning)
-    }
-    
     private var headerView: some View {
         Text("YGO Shuffle")
             .font(.system(size: 28, weight: .bold, design: .rounded))
-            .foregroundStyle(titleGradient)
+            .foregroundStyle(.white)
             .lineLimit(1)
             .minimumScaleFactor(0.8)
     }
 
-    private var titleGradient: LinearGradient {
-        LinearGradient(
-            colors: [.yellow, .orange],
-            startPoint: .leading,
-            endPoint: .trailing
-        )
-    }
-    
     private var ruleListSelector: some View {
         HStack(spacing: 8) {
             Menu {
@@ -206,7 +176,7 @@ struct ContentView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12)
                 .frame(height: 58)
-                .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                .background(Color(red: 0.13, green: 0.18, blue: 0.28), in: RoundedRectangle(cornerRadius: 14))
             }
             .accessibilityLabel("Active list: \(currentRuleList.name)")
 
@@ -216,9 +186,9 @@ struct ContentView: View {
                         .font(.title3)
                     Text("Filters").font(.system(size: 10, weight: .medium))
                 }
-                .foregroundStyle(.cyan)
+                .foregroundStyle(.white)
                 .frame(width: 54, height: 58)
-                .background(.cyan.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                .background(Color(red: 0.0, green: 0.38, blue: 0.42), in: RoundedRectangle(cornerRadius: 14))
             }
             .accessibilityLabel("Rule category filters")
         }
@@ -241,15 +211,15 @@ struct ContentView: View {
 
     private var utilityControls: some View {
         HStack(spacing: 6) {
-            utilityButton("Lists", icon: "folder.badge.gearshape") { showingRuleLists = true }
-            utilityButton("History", icon: "clock.arrow.circlepath") { showingHistory = true }
-            utilityButton("How to Play", icon: "questionmark.circle") { showingHowToPlay = true }
-            utilityButton("Settings", icon: "gearshape") { showingSettings = true }
+            utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.12, green: 0.32, blue: 0.75)) { showingRuleLists = true }
+            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 0.58, green: 0.16, blue: 0.58)) { showingHistory = true }
+            utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.10, green: 0.40, blue: 0.25)) { showingHowToPlay = true }
+            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.32, green: 0.23, blue: 0.62)) { showingSettings = true }
         }
         .padding(.horizontal, 16)
     }
 
-    private func utilityButton(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
+    private func utilityButton(_ title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 5) {
                 Image(systemName: icon).font(.system(size: 18))
@@ -258,10 +228,10 @@ struct ContentView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
             }
-            .foregroundStyle(.white.opacity(0.85))
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 48)
-            .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .background(color, in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
     }

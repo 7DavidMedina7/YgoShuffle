@@ -90,6 +90,8 @@ Duplicate avoidance compares the last completed result in saved history for the 
 
 ### Neon spinner
 
-The generator now features a purple-and-cyan arcade cabinet, a fading reel with a glowing center marker, orbit accents, and a compact result card. Classic and Quick Spin settings continue to control pacing. With iOS Reduce Motion enabled, it uses a brief static draw instead of the moving reel.
+The generator now features a black arcade cabinet with neon accents, a fading reel with a glowing center marker, orbit accents, and a compact result card. Classic and Quick Spin settings continue to control pacing. With iOS Reduce Motion enabled, it uses a brief static draw instead of the moving reel.
 
 The main generator fits its controls into a single screen: category filters sit beside the list selector, and Lists, History, How to Play, and Settings share a compact row. The reel adapts to screen height and uses a side-by-side layout in landscape. Tap **Full Rule** to read longer results at full size.
+
+The generator background is solid black. Its controls use distinct solid fills: orange Spin, blue Lists, magenta History, green How to Play, purple Settings, and teal Filters.

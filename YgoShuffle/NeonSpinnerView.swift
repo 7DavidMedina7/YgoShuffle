@@ -53,15 +53,15 @@ struct NeonSpinnerView: View {
                 .padding(.horizontal, 20)
                 .frame(minHeight: 52)
                 .background(
-                    LinearGradient(colors: canSpin && !isSpinning ? [violet, .indigo, cyan.opacity(0.75)] :
-                        [.gray.opacity(0.4), .gray.opacity(0.2)], startPoint: .leading, endPoint: .trailing),
+                    canSpin && !isSpinning ? Color(red: 0.75, green: 0.24, blue: 0.08) :
+                        Color(red: 0.20, green: 0.20, blue: 0.22),
                     in: RoundedRectangle(cornerRadius: 18)
                 )
                 .overlay {
                     RoundedRectangle(cornerRadius: 18)
                         .strokeBorder(.white.opacity(0.25), lineWidth: 1)
                 }
-                .shadow(color: canSpin && !isSpinning ? violet.opacity(0.35) : .clear, radius: 16, y: 6)
+                .shadow(color: canSpin && !isSpinning ? Color.orange.opacity(0.2) : .clear, radius: 16, y: 6)
             }
             .buttonStyle(.plain)
             .disabled(isSpinning || !canSpin)
@@ -71,14 +71,10 @@ struct NeonSpinnerView: View {
         .padding(14)
         .background {
             RoundedRectangle(cornerRadius: 28)
-                .fill(LinearGradient(colors: [
-                    Color(red: 0.08, green: 0.06, blue: 0.17),
-                    Color(red: 0.03, green: 0.04, blue: 0.09)
-                ], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(Color.black)
                 .overlay {
                     RoundedRectangle(cornerRadius: 28)
-                        .strokeBorder(LinearGradient(colors: [violet.opacity(0.8), cyan.opacity(0.25), violet.opacity(0.15)],
-                                                     startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
+                        .strokeBorder(violet.opacity(0.5), lineWidth: 1)
                 }
                 .shadow(color: violet.opacity(0.16), radius: 24, y: 10)
         }
@@ -87,7 +83,7 @@ struct NeonSpinnerView: View {
 
     private var reelWindow: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 20).fill(.black.opacity(0.65))
+            RoundedRectangle(cornerRadius: 20).fill(Color.black)
             starfield
             if isSpinning && !rerolling && !reduceMotion {
                 spinningReel
