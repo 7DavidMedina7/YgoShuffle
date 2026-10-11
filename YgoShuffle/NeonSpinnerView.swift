@@ -49,19 +49,19 @@ struct NeonSpinnerView: View {
                     Image(systemName: isSpinning ? "lock.fill" : "arrow.right")
                         .font(.subheadline.weight(.bold))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(canSpin && !isSpinning ? cyan : .white.opacity(0.6))
                 .padding(.horizontal, 20)
                 .frame(minHeight: 52)
                 .background(
-                    canSpin && !isSpinning ? Color(red: 0.78, green: 0.08, blue: 0.12) :
+                    canSpin && !isSpinning ? Color(red: 0.06, green: 0.16, blue: 0.23) :
                         Color(red: 0.20, green: 0.20, blue: 0.22),
                     in: RoundedRectangle(cornerRadius: 18)
                 )
                 .overlay {
                     RoundedRectangle(cornerRadius: 18)
-                        .strokeBorder(.white.opacity(0.25), lineWidth: 1)
+                        .strokeBorder(cyan.opacity(canSpin && !isSpinning ? 0.5 : 0.15), lineWidth: 1)
                 }
-                .shadow(color: canSpin && !isSpinning ? Color.red.opacity(0.2) : .clear, radius: 16, y: 6)
+                .shadow(color: canSpin && !isSpinning ? cyan.opacity(0.12) : .clear, radius: 16, y: 6)
             }
             .buttonStyle(.plain)
             .disabled(isSpinning || !canSpin)

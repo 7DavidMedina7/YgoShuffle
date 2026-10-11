@@ -211,10 +211,10 @@ struct ContentView: View {
 
     private var utilityControls: some View {
         HStack(spacing: 6) {
-            utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.35, green: 0.76, blue: 1), textColor: .black) { showingRuleLists = true }
-            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 1, green: 0.55, blue: 0.08), textColor: .black) { showingHistory = true }
+            utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingRuleLists = true }
+            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingHistory = true }
             utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.25, green: 0.90, blue: 0.35), textColor: .black) { showingHowToPlay = true }
-            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.67, green: 0.25, blue: 1)) { showingSettings = true }
+            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingSettings = true }
         }
         .padding(.horizontal, 16)
     }

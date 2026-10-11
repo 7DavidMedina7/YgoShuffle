@@ -94,4 +94,4 @@ The generator now features a black arcade cabinet with neon accents, a fading re
 
 The main generator fits its controls into a single screen: category filters sit beside the list selector, and Lists, History, How to Play, and Settings share a compact row. The reel adapts to screen height and uses a side-by-side layout in landscape. Tap **Full Rule** to read longer results at full size.
 
-The generator background is solid black. Its controls use distinct solid fills: red Spin, sky-blue Lists, orange History, bright-green How to Play, bright-purple Settings, and bright-yellow Filters.
+The generator background is solid black. Its controls use distinct solid fills: dark charcoal/blue Spin, Lists, History, and Settings with cyan accents, bright-green How to Play, and bright-yellow Filters.
