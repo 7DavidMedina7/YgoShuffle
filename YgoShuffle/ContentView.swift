@@ -137,7 +137,7 @@ struct ContentView: View {
     private var headerView: some View {
         Text("YGO Shuffle")
             .font(.system(size: 28, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
+            .foregroundStyle(.cyan)
             .lineLimit(1)
             .minimumScaleFactor(0.8)
     }
@@ -186,9 +186,9 @@ struct ContentView: View {
                         .font(.title3)
                     Text("Filters").font(.system(size: 10, weight: .medium))
                 }
-                .foregroundStyle(.black)
+                .foregroundStyle(.cyan)
                 .frame(width: 54, height: 58)
-                .background(Color(red: 1, green: 0.88, blue: 0.08), in: RoundedRectangle(cornerRadius: 14))
+                .background(Color(red: 0.09, green: 0.12, blue: 0.16), in: RoundedRectangle(cornerRadius: 14))
             }
             .accessibilityLabel("Rule category filters")
         }
@@ -213,7 +213,7 @@ struct ContentView: View {
         HStack(spacing: 6) {
             utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingRuleLists = true }
             utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingHistory = true }
-            utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.25, green: 0.90, blue: 0.35), textColor: .black) { showingHowToPlay = true }
+            utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingHowToPlay = true }
             utilityButton("Settings", icon: "gearshape", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingSettings = true }
         }
         .padding(.horizontal, 16)
