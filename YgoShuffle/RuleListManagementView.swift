@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 // Manage, reorder, and duplicate rule lists.
 struct RuleListManagementView: View {
@@ -9,7 +10,19 @@ struct RuleListManagementView: View {
     
     @State private var showingNewListAlert = false
     @State private var newListName = ""
-    @State private var editingListId: UUID? = nil
+    @State private var showingImporter = false
+    @State private var showingExporter = false
+    @State private var exportDocument: RuleListDocument?
+    @State private var exportFilename = "YGOShuffle-Rules.json"
+    @State private var sharedFile: SharedRuleListFile?
+    @State private var shareDirectory: URL?
+    @State private var transferMessage: TransferMessage?
+
+    private struct TransferMessage: Identifiable {
+        let id = UUID()
+        let title: String
+        let text: String
+    }
     
     var body: some View {
         NavigationView {
@@ -55,6 +68,16 @@ struct RuleListManagementView: View {
                             .tint(.blue)
                         }
                         .contextMenu {
+                            Button {
+                                shareRuleList(ruleList)
+                            } label: {
+                                Label("Share JSON", systemImage: "square.and.arrow.up")
+                            }
+                            Button {
+                                exportRuleList(ruleList)
+                            } label: {
+                                Label("Save JSON File", systemImage: "doc")
+                            }
                             Button("Select as Active") {
                                 selectedListID = ruleList.id
                                 onSave()
@@ -74,8 +97,14 @@ struct RuleListManagementView: View {
                     .onMove(perform: moveRuleList)
                 }
                 
-                Section(footer: Text("Tip: Swipe left on a list to delete it, or swipe right to duplicate it.")) {
-                    EmptyView()
+                Section {
+                    Button {
+                        showingImporter = true
+                    } label: {
+                        Label("Import Rule List", systemImage: "square.and.arrow.down")
+                    }
+                } footer: {
+                    Text("Import a JSON file to add a new list. Press and hold a list to share it or save its JSON file.")
                 }
             }
             .navigationTitle("Rule Lists")
@@ -93,6 +122,19 @@ struct RuleListManagementView: View {
                     }
                 }
             }
+            .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.json]) { result in
+                importRuleList(result)
+            }
+            .fileExporter(isPresented: $showingExporter, document: exportDocument,
+                          contentType: .json, defaultFilename: exportFilename) { result in
+                if case .failure(let error) = result { showTransferError(error) }
+            }
+            .sheet(item: $sharedFile, onDismiss: removeShareFile) { file in
+                RuleListShareSheet(url: file.url)
+            }
+            .alert(item: $transferMessage) { message in
+                Alert(title: Text(message.title), message: Text(message.text), dismissButton: .default(Text("OK")))
+            }
             .alert("New Rule List", isPresented: $showingNewListAlert) {
                 TextField("List Name", text: $newListName)
                 Button("Cancel", role: .cancel) {
@@ -108,6 +150,62 @@ struct RuleListManagementView: View {
         }
     }
     
+    private func exportRuleList(_ list: RuleList) {
+        do {
+            exportDocument = RuleListDocument(data: try RuleListTransfer.encode(list))
+            exportFilename = RuleListTransfer.filename(for: list.name)
+            showingExporter = true
+        } catch { showTransferError(error) }
+    }
+
+    private func shareRuleList(_ list: RuleList) {
+        do {
+            let data = try RuleListTransfer.encode(list)
+            removeShareFile()
+            let directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            shareDirectory = directory
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let url = directory.appendingPathComponent(RuleListTransfer.filename(for: list.name))
+            try data.write(to: url, options: .atomic)
+            sharedFile = SharedRuleListFile(url: url)
+        } catch {
+            removeShareFile()
+            showTransferError(error)
+        }
+    }
+
+    private func removeShareFile() {
+        if let directory = shareDirectory {
+            try? FileManager.default.removeItem(at: directory)
+        }
+        shareDirectory = nil
+    }
+
+    private func importRuleList(_ result: Result<URL, Error>) {
+        do {
+            let url = try result.get()
+            let hasAccess = url.startAccessingSecurityScopedResource()
+            defer { if hasAccess { url.stopAccessingSecurityScopedResource() } }
+            let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize
+            if let size, size > RuleListTransfer.maximumFileBytes {
+                throw RuleListTransfer.TransferError.tooLarge
+            }
+            let data = try Data(contentsOf: url)
+            let imported = try RuleListTransfer.decode(data, existingNames: ruleLists.map { $0.name })
+            ruleLists.append(imported)
+            onSave()
+            transferMessage = TransferMessage(title: "List Imported",
+                                              text: "Added \(imported.name) with \(imported.rules.count) rules.")
+        } catch { showTransferError(error) }
+    }
+
+    private func showTransferError(_ error: Error) {
+        let cocoaError = error as NSError
+        if cocoaError.domain == NSCocoaErrorDomain && cocoaError.code == NSUserCancelledError { return }
+        transferMessage = TransferMessage(title: "Couldn’t Transfer List", text: error.localizedDescription)
+    }
+
     func createNewRuleList() {
         let trimmedName = newListName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
