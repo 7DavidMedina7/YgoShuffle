@@ -81,3 +81,9 @@ In **Manage Lists**, choose a category when adding a rule or tap its pencil to e
 Open **Manage Lists**, then press and hold a list and choose **Share JSON** to send its file through the iOS share sheet, or **Save JSON File** to save it in Files. The file includes the list name, rule text and categories, and enabled-category filters. It does not include history.
 
 Tap **Import Rule List** and select a JSON file to add a new list. Imports do not replace existing lists or change the active list; matching names receive an Imported suffix. Current shared files and standalone legacy rule-list JSON files are supported. Invalid files show an error without changing your lists. Files are limited to 1 MB and 1,000 rules.
+
+### Spin settings
+
+Open **Spin Settings** on the generator screen to toggle haptics, sound effects, quick spins, and consecutive-duplicate avoidance. Settings are saved on your device. Sound starts off and respects silent mode; haptics and duplicate avoidance start on. Quick Spin reduces the animation from 2 seconds to 0.65 seconds and the re-roll pause from 1 second to 0.3 seconds.
+
+Duplicate avoidance compares the last completed result in saved history for the active list and excludes matching rule text when another enabled result exists. If only one distinct result is available, it can repeat. Clearing history resets the comparison. Haptics require a supported device.
