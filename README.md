@@ -75,3 +75,9 @@ Tap **Rule History** on the generator screen to see your last 100 completed spin
 Tap **Categories** below the active-list selector to choose which categories can appear in a spin. Filters are saved separately for each list; all categories start enabled. Disabling every category pauses generation until you enable a category with rules. You can restore all categories with **Enable All Categories**.
 
 In **Manage Lists**, choose a category when adding a rule or tap its pencil to edit its text and category. Existing default rules are categorized automatically; unmatched custom rules start in **Miscellaneous**. Duplicate lists copy their categories and filters. Existing saved lists are migrated when the app launches.
+
+### Share and import rule lists
+
+Open **Manage Lists**, then press and hold a list and choose **Share JSON** to send its file through the iOS share sheet, or **Save JSON File** to save it in Files. The file includes the list name, rule text and categories, and enabled-category filters. It does not include history.
+
+Tap **Import Rule List** and select a JSON file to add a new list. Imports do not replace existing lists or change the active list; matching names receive an Imported suffix. Current shared files and standalone legacy rule-list JSON files are supported. Invalid files show an error without changing your lists. Files are limited to 1 MB and 1,000 rules.
