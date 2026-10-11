@@ -30,7 +30,7 @@ struct RuleHistoryTests {
         var list = RuleList(name: "Original", rules: ["Draw"])
         history.record(rule: "Draw", list: list)
         list.name = "Renamed"
-        list.rules = ["Discard"]
+        list.rules = [Rule(text: "Discard")]
         history.record(rule: "Draw", list: list)
 
         #expect(history.entries.count == 2)

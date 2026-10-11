@@ -69,3 +69,9 @@ YGO Shuffle is an unofficial fan-made companion project and is not affiliated wi
 ### Rule history
 
 Tap **Rule History** on the generator screen to see your last 100 completed spins, newest first. Each result includes the rule, the source list name at the time of the spin, and its date and time. History is saved on your device across app launches. Canceled spins and re-roll messages are not recorded. Use **Clear** in the history screen and confirm to remove all saved results.
+
+### Rule categories and filters
+
+Tap **Categories** below the active-list selector to choose which categories can appear in a spin. Filters are saved separately for each list; all categories start enabled. Disabling every category pauses generation until you enable a category with rules. You can restore all categories with **Enable All Categories**.
+
+In **Manage Lists**, choose a category when adding a rule or tap its pencil to edit its text and category. Existing default rules are categorized automatically; unmatched custom rules start in **Miscellaneous**. Duplicate lists copy their categories and filters. Existing saved lists are migrated when the app launches.

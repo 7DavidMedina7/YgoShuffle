@@ -123,7 +123,7 @@ struct RuleListManagementView: View {
         
         let originalList = ruleLists[index]
         let duplicatedName = generateDuplicateName(from: originalList.name)
-        let duplicatedList = RuleList(name: duplicatedName, rules: originalList.rules)
+        let duplicatedList = originalList.duplicate(named: duplicatedName)
         
         // Insert the duplicated list right after the original
         ruleLists.insert(duplicatedList, at: index + 1)
