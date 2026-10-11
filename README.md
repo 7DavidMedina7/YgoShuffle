@@ -87,3 +87,11 @@ Tap **Import Rule List** and select a JSON file to add a new list. Imports do no
 Open **Spin Settings** on the generator screen to toggle haptics, sound effects, quick spins, and consecutive-duplicate avoidance. Settings are saved on your device. Sound starts off and respects silent mode; haptics and duplicate avoidance start on. Quick Spin reduces the animation from 2 seconds to 0.65 seconds and the re-roll pause from 1 second to 0.3 seconds.
 
 Duplicate avoidance compares the last completed result in saved history for the active list and excludes matching rule text when another enabled result exists. If only one distinct result is available, it can repeat. Clearing history resets the comparison. Haptics require a supported device.
+
+### Neon spinner
+
+The generator now features a black arcade cabinet with neon accents, a fading reel with a glowing center marker, orbit accents, and a compact result card. Classic and Quick Spin settings continue to control pacing. With iOS Reduce Motion enabled, it uses a brief static draw instead of the moving reel.
+
+The main generator fits its controls into a single screen: category filters sit beside the list selector, and Lists, History, How to Play, and Settings share a compact row. The reel adapts to screen height and uses a side-by-side layout in landscape. Tap **Full Rule** to read longer results at full size.
+
+The generator background is solid black. Its controls use distinct solid fills: dark charcoal/blue buttons with cyan accents throughout, including How to Play and Filters. The YGO Shuffle title uses the same cyan-blue accent.
