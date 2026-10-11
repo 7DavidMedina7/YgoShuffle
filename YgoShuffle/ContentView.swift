@@ -29,6 +29,9 @@ struct ContentView: View {
     @State private var showingHowToPlay = false
     @State private var showingHistory = false
     @State private var showingFilters = false
+    @State private var showingSettings = false
+    @State private var spinPreferences = SpinPreferences()
+    @StateObject private var spinFeedback = SpinFeedback()
     @State private var history = RuleHistory()
     @AppStorage("darkMode") private var persistentDarkMode = true
     
@@ -62,6 +65,7 @@ struct ContentView: View {
                         slotMachineContainer
                         controlButtons
                         historyButton
+                        settingsButton
                         Spacer(minLength: 20)
                     }
                 }
@@ -89,6 +93,14 @@ struct ContentView: View {
             cancelSpin()
         }
         .onDisappear { cancelSpin() }
+        .onChange(of: spinPreferences) { _, preferences in
+            preferences.save()
+            if !preferences.soundEnabled { spinFeedback.stop() }
+        }
+        .sheet(isPresented: $showingSettings) {
+            SpinSettingsView(preferences: $spinPreferences)
+                .preferredColorScheme(.dark)
+        }
         .sheet(isPresented: $showingFilters) {
             RuleCategoryFilterView(
                 ruleList: Binding(
@@ -457,6 +469,15 @@ struct ContentView: View {
         .padding(.horizontal)
     }
 
+    private var settingsButton: some View {
+        Button(action: { showingSettings = true }) {
+            Label("Spin Settings", systemImage: "gearshape")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .padding(.horizontal)
+    }
+
     private var historyButton: some View {
         Button(action: { showingHistory = true }) {
             Label("Rule History", systemImage: "clock.arrow.circlepath")
@@ -477,21 +498,26 @@ struct ContentView: View {
         guard !isSpinning else { return }
         let sourceList = currentRuleList
         let rules = sourceList.eligibleRules
-        guard let outcome = RuleGenerator.pick(from: rules) else {
+        let previousRule = spinPreferences.avoidConsecutiveDuplicates
+            ? history.entries.first(where: { $0.listID == sourceList.id })?.rule : nil
+        guard let outcome = RuleGenerator.pick(from: rules, avoiding: previousRule) else {
             selectedRule = "No playable rules available. Add a rule other than Re-roll the generator."
             return
         }
+        let duration = spinPreferences.spinDuration
+        let rerollDuration = spinPreferences.rerollDuration
         let token = UUID()
         spinID = token
         
         isSpinning = true
+        spinFeedback.started(preferences: spinPreferences)
         
         // Create infinite loop of rules to fill entire animation duration
         var infiniteRules: [String] = []
         
         // Much faster scroll speed for authentic casino feel
         let pixelsPerSecond: CGFloat = 800
-        let animationDuration: CGFloat = 2.0
+        let animationDuration = CGFloat(duration)
         let ruleHeight: CGFloat = 45
         
         let totalPixelsToScroll = pixelsPerSecond * animationDuration
@@ -512,20 +538,20 @@ struct ContentView: View {
         // Fast scroll through the calculated distance
         let scrollDistance = totalPixelsToScroll - 150
         
-        // 2-second animation with fast rule display
-        withAnimation(.linear(duration: 2.0)) {
+        // Scroll using the duration selected at the start of this spin.
+        withAnimation(.linear(duration: duration)) {
             spinOffset = -scrollDistance
         }
         
-        // Final selection after 2 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+        // Reveal only if this spin has not been canceled.
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
             guard spinID == token else { return }
             if outcome.didReroll {
                 // Reveal the re-roll message while keeping the button locked.
                 selectedRule = "🎲 RE-ROLLING! 🎲"
                 slotRules = ["🎲 RE-ROLLING! 🎲"]
                 spinOffset = 0
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + rerollDuration) {
                     guard spinID == token else { return }
                     finishSpin(with: outcome.rule, list: sourceList)
                 }
@@ -537,6 +563,7 @@ struct ContentView: View {
 
     private func finishSpin(with rule: String, list: RuleList) {
         history.record(rule: rule, list: list)
+        spinFeedback.revealed(preferences: spinPreferences)
         withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
             isGlowing = false
             selectedRule = rule
@@ -545,6 +572,7 @@ struct ContentView: View {
     }
 
     private func cancelSpin() {
+        spinFeedback.stop()
         spinID = UUID()
         isSpinning = false
         selectedRule = nil
