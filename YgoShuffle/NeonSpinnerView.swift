@@ -102,7 +102,7 @@ struct NeonSpinnerView: View {
                 standby
             }
         }
-        .frame(height: 300)
+        .frame(height: CGFloat(SpinReelPlan.windowHeight))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay {
             RoundedRectangle(cornerRadius: 20)

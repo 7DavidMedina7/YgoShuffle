@@ -19,7 +19,7 @@ struct SlotMachineView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal, 10)
-                    .frame(height: 45)
+                    .frame(height: CGFloat(SpinReelPlan.rowHeight))
                     .background(index.isMultiple(of: 2) ? Color.cyan.opacity(0.04) : Color.purple.opacity(0.06))
                 }
             }

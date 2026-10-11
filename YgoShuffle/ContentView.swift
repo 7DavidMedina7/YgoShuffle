@@ -314,54 +314,51 @@ struct ContentView: View {
         isSpinning = true
         spinFeedback.started(preferences: spinPreferences)
         
-        // Create infinite loop of rules to fill entire animation duration
-        var infiniteRules: [String] = []
-        
-        // Much faster scroll speed for authentic casino feel
-        let pixelsPerSecond: CGFloat = 800
-        let animationDuration = CGFloat(duration)
-        let ruleHeight: CGFloat = 45
-        
-        let totalPixelsToScroll = pixelsPerSecond * animationDuration
-        let totalRulesNeeded = Int(totalPixelsToScroll / ruleHeight) + 10
-        
-        // Keep repeating the rules until we have enough to fill the animation
-        while infiniteRules.count < totalRulesNeeded {
-            infiniteRules.append(contentsOf: rules.shuffled())
+        let landingRule = outcome.didReroll ? RuleGenerator.rerollRule : outcome.rule
+        guard let reel = SpinReelPlan.make(from: rules, landingRule: landingRule, duration: duration) else {
+            cancelSpin()
+            return
         }
-        
-        slotRules = infiniteRules
-        
-        // Reset without interpolation, then let the reel mount before scrolling.
+        slotRules = reel.rules
+
         var resetTransaction = Transaction()
         resetTransaction.disablesAnimations = true
         withTransaction(resetTransaction) { spinOffset = 0 }
-        let scrollDistance = max(0, totalPixelsToScroll - 150)
-        let reelMountDelay = reduceMotion ? 0.0 : 0.05
-        if !reduceMotion {
-            DispatchQueue.main.asyncAfter(deadline: .now() + reelMountDelay) {
+        if reduceMotion {
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+                completeReel(outcome: outcome, list: sourceList, token: token,
+                             rerollDuration: rerollDuration)
+            }
+        } else {
+            // Mount at the starting position before animating toward the chosen row.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 guard spinID == token else { return }
-                withAnimation(.timingCurve(0.12, 0.65, 0.2, 1, duration: duration)) {
-                    spinOffset = -scrollDistance
+                withAnimation(.timingCurve(0.12, 0.65, 0.2, 1, duration: duration),
+                              completionCriteria: .removed) {
+                    spinOffset = CGFloat(reel.landingOffset)
+                } completion: {
+                    guard spinID == token else { return }
+                    // Briefly hold the centered result so the reel and reveal read as one choice.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        completeReel(outcome: outcome, list: sourceList, token: token,
+                                     rerollDuration: rerollDuration)
+                    }
                 }
             }
         }
+    }
 
-        // Reveal only if this spin has not been canceled.
-        DispatchQueue.main.asyncAfter(deadline: .now() + reelMountDelay + duration) {
-            guard spinID == token else { return }
-            if outcome.didReroll {
-                // Reveal the re-roll message while keeping the button locked.
-                selectedRule = "🎲 RE-ROLLING! 🎲"
-                slotRules = ["🎲 RE-ROLLING! 🎲"]
-                spinOffset = 0
-                DispatchQueue.main.asyncAfter(deadline: .now() + rerollDuration) {
-                    guard spinID == token else { return }
-                    finishSpin(with: outcome.rule, list: sourceList)
-                }
-            } else {
-                finishSpin(with: outcome.rule, list: sourceList)
+    private func completeReel(outcome: RuleGenerator.Outcome, list: RuleList,
+                              token: UUID, rerollDuration: Double) {
+        guard spinID == token else { return }
+        if outcome.didReroll {
+            selectedRule = "🎲 RE-ROLLING! 🎲"
+            DispatchQueue.main.asyncAfter(deadline: .now() + rerollDuration) {
+                guard spinID == token else { return }
+                finishSpin(with: outcome.rule, list: list)
             }
+        } else {
+            finishSpin(with: outcome.rule, list: list)
         }
     }
 
