@@ -7,17 +7,6 @@
 
 import SwiftUI
 
-// Data model for rule lists
-struct RuleList: Codable, Identifiable, Equatable {
-    let id = UUID()
-    var name: String
-    var rules: [String]
-    
-    static func == (lhs: RuleList, rhs: RuleList) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-
 // Safe array access extension
 extension Array {
     subscript(safe index: Int) -> Element? {
@@ -126,7 +115,8 @@ struct ContentView: View {
         ])]
     }()
     
-    @State private var selectedRuleListIndex: Int = UserDefaults.standard.integer(forKey: "selectedRuleListIndex")
+    @State private var selectedRuleListID: UUID?
+    @State private var spinID = UUID()
     @State private var selectedRule: String? = nil
     @State private var isSpinning = false
     @State private var showingRuleLists = false
@@ -138,10 +128,8 @@ struct ContentView: View {
     @AppStorage("darkMode") private var persistentDarkMode = true
     
     private var currentRuleList: RuleList {
-        guard selectedRuleListIndex < ruleLists.count else {
-            return ruleLists.first ?? RuleList(name: "Empty", rules: [])
-        }
-        return ruleLists[selectedRuleListIndex]
+        ruleLists.first(where: { $0.id == selectedRuleListID })
+            ?? ruleLists.first ?? RuleList(name: "Empty", rules: [])
     }
     
     let gradientColors = [
@@ -177,17 +165,23 @@ struct ContentView: View {
         .sheet(isPresented: $showingRuleLists) {
             RuleListManagementView(
                 ruleLists: $ruleLists,
-                selectedListIndex: $selectedRuleListIndex,
+                selectedListID: $selectedRuleListID,
                 onSave: saveRuleLists
             )
             .preferredColorScheme(.dark)
         }
         .onAppear {
-            // Validate selected index on app start
-            if selectedRuleListIndex >= ruleLists.count {
-                selectedRuleListIndex = 0
-            }
+            selectedRuleListID = RuleListPersistence.selectedID(in: ruleLists)
+            saveRuleLists()
         }
+        .onChange(of: selectedRuleListID) { _, _ in
+            cancelSpin()
+            saveSelectedList()
+        }
+        .onChange(of: ruleLists.map { $0.rules }) { _, _ in
+            cancelSpin()
+        }
+        .onDisappear { cancelSpin() }
         .sheet(isPresented: $showingHowToPlay) {
             HowToPlayView()
                 .preferredColorScheme(.dark)
@@ -239,15 +233,15 @@ struct ContentView: View {
             }
             
             Menu {
-                ForEach(Array(ruleLists.enumerated()), id: \.offset) { index, ruleList in
+                ForEach(ruleLists) { ruleList in
                     Button(action: {
-                        selectedRuleListIndex = index
+                        selectedRuleListID = ruleList.id
                         saveSelectedList()
                         selectedRule = nil // Clear current selection when switching lists
                     }) {
                         HStack {
                             Text(ruleList.name)
-                            if index == selectedRuleListIndex {
+                            if ruleList.id == selectedRuleListID {
                                 Image(systemName: "checkmark")
                             }
                         }
@@ -531,7 +525,14 @@ struct ContentView: View {
     
     // Pick random rule with slot machine animation
     func pickRandomRule() {
-        guard !currentRuleList.rules.isEmpty else { return }
+        guard !isSpinning else { return }
+        let rules = currentRuleList.rules
+        guard let outcome = RuleGenerator.pick(from: rules) else {
+            selectedRule = "No playable rules available. Add a rule other than Re-roll the generator."
+            return
+        }
+        let token = UUID()
+        spinID = token
         
         isSpinning = true
         
@@ -548,7 +549,7 @@ struct ContentView: View {
         
         // Keep repeating the rules until we have enough to fill the animation
         while infiniteRules.count < totalRulesNeeded {
-            infiniteRules.append(contentsOf: currentRuleList.rules.shuffled())
+            infiniteRules.append(contentsOf: rules.shuffled())
         }
         
         slotRules = infiniteRules
@@ -568,48 +569,49 @@ struct ContentView: View {
         
         // Final selection after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            var finalRule = currentRuleList.rules.randomElement() ?? ""
-            
-            if finalRule == "Re-roll the generator." {
-                // Handle re-roll with extra drama
-                withAnimation(.easeInOut(duration: 0.5)) {
-                    selectedRule = "🎲 RE-ROLLING! 🎲"
-                }
-                
+            guard spinID == token else { return }
+            if outcome.didReroll {
+                // Reveal the re-roll message while keeping the button locked.
+                selectedRule = "🎲 RE-ROLLING! 🎲"
+                slotRules = ["🎲 RE-ROLLING! 🎲"]
+                spinOffset = 0
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    repeat {
-                        finalRule = currentRuleList.rules.randomElement() ?? ""
-                    } while finalRule == "Re-roll the generator."
-                    
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-                        isGlowing = false // Reset glow state
-                        selectedRule = finalRule
-                        isSpinning = false
-                    }
+                    guard spinID == token else { return }
+                    finishSpin(with: outcome.rule)
                 }
             } else {
-                // Final dramatic reveal
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-                    isGlowing = false // Reset glow state
-                    selectedRule = finalRule
-                    isSpinning = false
-                }
+                finishSpin(with: outcome.rule)
             }
         }
+    }
+
+    private func finishSpin(with rule: String) {
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+            isGlowing = false
+            selectedRule = rule
+            isSpinning = false
+        }
+    }
+
+    private func cancelSpin() {
+        spinID = UUID()
+        isSpinning = false
+        selectedRule = nil
+        isGlowing = false
     }
     
     // Save to UserDefaults
     func saveRuleLists() {
         if let encoded = try? JSONEncoder().encode(ruleLists) {
             UserDefaults.standard.set(encoded, forKey: "ruleLists")
-            print("Saved \(ruleLists.count) rule lists")
+            saveSelectedList()
         } else {
             print("Failed to encode rule lists")
         }
     }
     
     func saveSelectedList() {
-        UserDefaults.standard.set(selectedRuleListIndex, forKey: "selectedRuleListIndex")
+        UserDefaults.standard.set(selectedRuleListID?.uuidString, forKey: "selectedRuleListID")
     }
 }
 
@@ -653,7 +655,7 @@ struct SlotMachineView: View {
 // Rule List Management View with Duplicate Functionality
 struct RuleListManagementView: View {
     @Binding var ruleLists: [RuleList]
-    @Binding var selectedListIndex: Int
+    @Binding var selectedListID: UUID?
     let onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
     
@@ -665,12 +667,13 @@ struct RuleListManagementView: View {
         NavigationView {
             List {
                 Section(header: Text("Rule Lists")) {
-                    ForEach(Array(ruleLists.enumerated()), id: \.element.id) { index, ruleList in
+                    ForEach(ruleLists) { ruleList in
                         NavigationLink(destination: RulesManagementView(
                             ruleList: Binding(
-                                get: { ruleLists[index] },
+                                get: { ruleLists.first(where: { $0.id == ruleList.id }) ?? ruleList },
                                 set: {
-                                    ruleLists[index] = $0
+                                    guard let currentIndex = ruleLists.firstIndex(where: { $0.id == ruleList.id }) else { return }
+                                    ruleLists[currentIndex] = $0
                                     onSave()
                                 }
                             ),
@@ -685,7 +688,7 @@ struct RuleListManagementView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 Spacer()
-                                if index == selectedListIndex {
+                                if ruleList.id == selectedListID {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.green)
                                 }
@@ -693,29 +696,29 @@ struct RuleListManagementView: View {
                         }
                         .swipeActions(edge: .trailing) {
                             Button("Delete", role: .destructive) {
-                                deleteRuleList(at: index)
+                                deleteRuleList(id: ruleList.id)
                             }
                             .disabled(ruleLists.count == 1) // Don't allow deleting the last list
                         }
                         .swipeActions(edge: .leading) {
                             Button("Duplicate") {
-                                duplicateRuleList(at: index)
+                                duplicateRuleList(id: ruleList.id)
                             }
                             .tint(.blue)
                         }
                         .contextMenu {
                             Button("Select as Active") {
-                                selectedListIndex = index
+                                selectedListID = ruleList.id
                                 onSave()
                             }
                             
                             Button("Duplicate") {
-                                duplicateRuleList(at: index)
+                                duplicateRuleList(id: ruleList.id)
                             }
                             
                             if ruleLists.count > 1 {
                                 Button("Delete", role: .destructive) {
-                                    deleteRuleList(at: index)
+                                    deleteRuleList(id: ruleList.id)
                                 }
                             }
                         }
@@ -767,8 +770,8 @@ struct RuleListManagementView: View {
         newListName = ""
     }
     
-    func duplicateRuleList(at index: Int) {
-        guard index < ruleLists.count else { return }
+    func duplicateRuleList(id: UUID) {
+        guard let index = ruleLists.firstIndex(where: { $0.id == id }) else { return }
         
         let originalList = ruleLists[index]
         let duplicatedName = generateDuplicateName(from: originalList.name)
@@ -776,11 +779,6 @@ struct RuleListManagementView: View {
         
         // Insert the duplicated list right after the original
         ruleLists.insert(duplicatedList, at: index + 1)
-        
-        // Update selected index if needed
-        if index < selectedListIndex {
-            selectedListIndex += 1
-        }
         
         onSave()
     }
@@ -828,32 +826,19 @@ struct RuleListManagementView: View {
         return finalName
     }
     
-    func deleteRuleList(at index: Int) {
+    func deleteRuleList(id: UUID) {
         guard ruleLists.count > 1 else { return } // Don't delete the last list
         
-        // If we're deleting the currently selected list, select the first one
-        if index == selectedListIndex {
-            selectedListIndex = 0
-        } else if index < selectedListIndex {
-            selectedListIndex -= 1
-        }
-        
+        guard let index = ruleLists.firstIndex(where: { $0.id == id }) else { return }
+        let deletedID = ruleLists[index].id
         ruleLists.remove(at: index)
+        if selectedListID == deletedID {
+            selectedListID = ruleLists.first?.id
+        }
         onSave()
     }
-    
+
     func moveRuleList(from source: IndexSet, to destination: Int) {
-        // Update selected index when moving lists
-        if let sourceIndex = source.first {
-            if sourceIndex == selectedListIndex {
-                selectedListIndex = destination > sourceIndex ? destination - 1 : destination
-            } else if sourceIndex < selectedListIndex && destination > selectedListIndex {
-                selectedListIndex -= 1
-            } else if sourceIndex > selectedListIndex && destination <= selectedListIndex {
-                selectedListIndex += 1
-            }
-        }
-        
         ruleLists.move(fromOffsets: source, toOffset: destination)
         onSave()
     }
@@ -876,7 +861,7 @@ struct RulesManagementView: View {
         Binding(
             get: { ruleList.rules },
             set: { newRules in
-                ruleList = RuleList(name: ruleList.name, rules: newRules)
+                ruleList.rules = newRules
                 onSave()
             }
         )
@@ -994,7 +979,7 @@ struct RulesManagementView: View {
             Button("Save") {
                 let trimmedName = newListName.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !trimmedName.isEmpty {
-                    ruleList = RuleList(name: trimmedName, rules: ruleList.rules)
+                    ruleList.name = trimmedName
                     onSave()
                 }
                 newListName = ""
