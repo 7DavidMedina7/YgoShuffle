@@ -7,14 +7,15 @@ struct SpinReelPlan {
 
     let rules: [String]
     let landingIndex: Int
+    let viewportHeight: Double
 
     var landingRule: String { rules[landingIndex] }
     var landingOffset: Double {
-        Self.windowHeight / 2 - (Double(landingIndex) + 0.5) * Self.rowHeight
+        viewportHeight / 2 - (Double(landingIndex) + 0.5) * Self.rowHeight
     }
 
-    static func make(from rules: [String], landingRule: String, duration: Double) -> SpinReelPlan? {
-        guard !rules.isEmpty, duration.isFinite, duration >= 0 else { return nil }
+    static func make(from rules: [String], landingRule: String, duration: Double, windowHeight: Double = SpinReelPlan.windowHeight) -> SpinReelPlan? {
+        guard !rules.isEmpty, duration.isFinite, duration >= 0, windowHeight.isFinite, windowHeight > 0, windowHeight <= 1_000 else { return nil }
         // Bound the decorative reel even if called with an unexpectedly long duration.
         let distance = min(duration, 10) * 800
         let landingIndex = max(4, Int(ceil(distance / rowHeight)))
@@ -24,6 +25,6 @@ struct SpinReelPlan {
             reel.append(contentsOf: rules.shuffled().prefix(rowCount - reel.count))
         }
         reel[landingIndex] = landingRule
-        return SpinReelPlan(rules: reel, landingIndex: landingIndex)
+        return SpinReelPlan(rules: reel, landingIndex: landingIndex, viewportHeight: windowHeight)
     }
 }

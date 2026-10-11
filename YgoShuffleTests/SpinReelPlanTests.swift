@@ -17,6 +17,20 @@ struct SpinReelPlanTests {
         #expect(reelBottom >= SpinReelPlan.windowHeight)
     }
 
+    @Test(arguments: [80.0, 180.0, 260.0, 340.0])
+    func responsiveWindowKeepsTheLandingCentered(windowHeight: Double) throws {
+        for duration in [0.65, 2.0] {
+            let plan = try #require(SpinReelPlan.make(
+                from: ["Draw", "Discard"], landingRule: "Discard",
+                duration: duration, windowHeight: windowHeight
+            ))
+            let center = (Double(plan.landingIndex) + 0.5) * SpinReelPlan.rowHeight + plan.landingOffset
+            #expect(center == windowHeight / 2)
+            #expect(plan.landingRule == "Discard")
+            #expect(Double(plan.rules.count) * SpinReelPlan.rowHeight + plan.landingOffset >= windowHeight)
+        }
+    }
+
     @Test func displayedLandingAndGeneratorOutcomeMatch() throws {
         let rules = ["Draw", "Draw", "Discard", RuleGenerator.rerollRule]
         for _ in 0..<100 {

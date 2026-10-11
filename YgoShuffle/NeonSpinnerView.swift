@@ -9,6 +9,8 @@ struct NeonSpinnerView: View {
     let quickSpin: Bool
     let revealID: UUID
     let onSpin: () -> Void
+    var windowHeight: CGFloat = 300
+    @State private var showingFullRule = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -17,15 +19,17 @@ struct NeonSpinnerView: View {
     private var rerolling: Bool { isSpinning && selectedRule == "🎲 RE-ROLLING! 🎲" }
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 12) {
             HStack {
                 Label("DUEL RANDOMIZER", systemImage: "sparkles")
-                    .font(.system(.caption, design: .monospaced, weight: .bold))
-                    .tracking(1.2)
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .tracking(0.5)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                     .foregroundStyle(cyan)
                 Spacer()
                 Text(quickSpin ? "QUICK" : "CLASSIC")
-                    .font(.system(.caption2, design: .monospaced, weight: .bold))
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
                     .padding(.horizontal, 9)
                     .padding(.vertical, 5)
                     .background(cyan.opacity(0.1), in: Capsule())
@@ -38,7 +42,7 @@ struct NeonSpinnerView: View {
                         .font(.title3)
                     Text(isSpinning ? (rerolling ? "RE-ROLLING" : "DRAWING YOUR FATE") :
                             (canSpin ? "SPIN FOR RULE" : "NO ENABLED RULES"))
-                        .font(.system(.headline, design: .rounded, weight: .heavy))
+                        .font(.system(size: 16, weight: .heavy, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                     Spacer(minLength: 0)
@@ -47,7 +51,7 @@ struct NeonSpinnerView: View {
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
-                .frame(minHeight: 58)
+                .frame(minHeight: 52)
                 .background(
                     LinearGradient(colors: canSpin && !isSpinning ? [violet, .indigo, cyan.opacity(0.75)] :
                         [.gray.opacity(0.4), .gray.opacity(0.2)], startPoint: .leading, endPoint: .trailing),
@@ -63,15 +67,8 @@ struct NeonSpinnerView: View {
             .disabled(isSpinning || !canSpin)
             .accessibilityLabel(isSpinning ? "Spinning" : "Spin for rule")
 
-            HStack(spacing: 6) {
-                Circle().fill(isSpinning ? cyan : .green).frame(width: 5, height: 5)
-                Text(isSpinning ? "THE NEXT MOVE IS IN MOTION" : "ONE SPIN. A WHOLE NEW DUEL.")
-                    .font(.system(.caption2, design: .monospaced))
-                    .foregroundStyle(.white.opacity(0.5))
-            }
-            .accessibilityHidden(true)
         }
-        .padding(20)
+        .padding(14)
         .background {
             RoundedRectangle(cornerRadius: 28)
                 .fill(LinearGradient(colors: [
@@ -102,7 +99,7 @@ struct NeonSpinnerView: View {
                 standby
             }
         }
-        .frame(height: CGFloat(SpinReelPlan.windowHeight))
+        .frame(height: windowHeight)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay {
             RoundedRectangle(cornerRadius: 20)
@@ -115,7 +112,7 @@ struct NeonSpinnerView: View {
     private var spinningReel: some View {
         ZStack {
             NeonOrbitView(isSpinning: true)
-                .frame(width: 220, height: 220)
+                .frame(width: min(220, windowHeight), height: min(220, windowHeight))
                 .opacity(0.2)
                 .accessibilityHidden(true)
             SlotMachineView(rules: rules, offset: offset)
@@ -143,7 +140,7 @@ struct NeonSpinnerView: View {
             .padding(.horizontal, 5)
             VStack {
                 Text("SHUFFLING THE POSSIBILITIES")
-                    .font(.system(.caption2, design: .monospaced, weight: .bold))
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
                     .tracking(1)
                     .foregroundStyle(cyan)
                     .padding(.top, 16)
@@ -158,7 +155,7 @@ struct NeonSpinnerView: View {
     private var standby: some View {
         VStack(spacing: 14) {
             NeonOrbitView(isSpinning: isSpinning && !reduceMotion)
-                .frame(width: 132, height: 132)
+                .frame(width: min(100, windowHeight * 0.4), height: min(100, windowHeight * 0.4))
                 .overlay {
                     Image(systemName: "suit.diamond.fill")
                         .font(.system(size: 38, weight: .light))
@@ -167,38 +164,62 @@ struct NeonSpinnerView: View {
                 }
                 .accessibilityHidden(true)
             Text(isSpinning ? "Drawing your fate…" : "Let fate choose.")
-                .font(.title3.weight(.semibold))
+                .font(.system(size: 18, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
                 .foregroundStyle(.white)
-            Text("A new rule. A new possibility.")
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.5))
+
         }
     }
 
     private func resultCard(_ rule: String) -> some View {
-        VStack(spacing: 12) {
-            Label(rerolling ? "FATE HAS OTHER PLANS" : "YOUR NEXT RULE",
+        VStack(spacing: windowHeight < 160 ? 6 : 10) {
+            if windowHeight >= 160 {
+                Label(rerolling ? "FATE HAS OTHER PLANS" : "YOUR NEXT RULE",
                   systemImage: rerolling ? "arrow.triangle.2.circlepath" : "sparkle")
-                .font(.system(.caption, design: .monospaced, weight: .bold))
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .tracking(1)
                 .foregroundStyle(rerolling ? cyan : .yellow)
             Rectangle()
                 .fill(LinearGradient(colors: [.clear, cyan.opacity(0.8), .clear],
                                      startPoint: .leading, endPoint: .trailing))
                 .frame(height: 1)
-            ScrollView {
-                Text(rule)
-                    .font(.system(.body, design: .rounded, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
             }
-            .scrollIndicators(.visible)
-            .frame(maxHeight: 200)
+            Text(rule)
+                .font(.system(.body, design: .rounded, weight: .semibold))
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .lineLimit(max(2, Int((windowHeight - 72) / 18)))
+                .minimumScaleFactor(0.65)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if !rerolling {
+                Button { showingFullRule = true } label: {
+                    Label("Full Rule", systemImage: "arrow.up.left.and.arrow.down.right")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(cyan)
+                }
+                .frame(minHeight: 28)
+            }
         }
-        .padding(22)
-        .accessibilityElement(children: .combine)
+        .padding(windowHeight < 160 ? 8 : 14)
+        .sheet(isPresented: $showingFullRule) {
+            NavigationStack {
+                ScrollView {
+                    Text(rule)
+                        .font(.title3)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                }
+                .navigationTitle("Full Rule")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Done") { showingFullRule = false }
+                    }
+                }
+            }
+            .preferredColorScheme(.dark)
+        }
     }
 
     private var starfield: some View {
@@ -232,7 +253,7 @@ private struct NeonOrbitView: View {
                     .stroke(.purple.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 6]))
                     .padding(12)
                     .rotationEffect(.degrees(-angle))
-                Circle().fill(.cyan).frame(width: 5, height: 5).offset(y: -65)
+                Circle().fill(.cyan).frame(width: 5, height: 5).offset(y: -45)
                     .rotationEffect(.degrees(angle))
                     .shadow(color: .cyan, radius: 6)
             }

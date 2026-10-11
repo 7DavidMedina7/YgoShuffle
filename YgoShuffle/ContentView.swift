@@ -24,6 +24,7 @@ struct ContentView: View {
     @State private var showingRuleLists = false
     @State private var slotRules: [String] = []
     @State private var spinOffset: CGFloat = 0
+    @State private var reelWindowHeight: CGFloat = 300
     @State private var isDarkMode = true
     @State private var revealID = UUID()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -57,18 +58,38 @@ struct ContentView: View {
         ZStack {
             backgroundGradient
             
-            NavigationView {
-                ScrollView {
-                    VStack(spacing: 30) {
-                        headerView
-                        ruleListSelector
-                        filterButton
-                        slotMachineContainer
-                        controlButtons
-                        historyButton
-                        settingsButton
-                        Spacer(minLength: 20)
+            GeometryReader { geometry in
+                let landscape = geometry.size.width > geometry.size.height
+                let windowHeight = max(80, min(340, geometry.size.height - (landscape ? 150 : 338)))
+                Group {
+                    if landscape {
+                        HStack(spacing: 12) {
+                            VStack(spacing: 10) {
+                                headerView
+                                ruleListSelector
+                                utilityControls
+                            }
+                            .frame(width: min(260, geometry.size.width * 0.36))
+                            slotMachineContainer(windowHeight: windowHeight)
+                        }
+                    } else {
+                        VStack(spacing: 10) {
+                            headerView
+                                .frame(height: 38)
+                            ruleListSelector
+                                .frame(height: 62)
+                            slotMachineContainer(windowHeight: windowHeight)
+                            utilityControls
+                                .frame(height: 54)
+                        }
                     }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.vertical, 8)
+                .onAppear { reelWindowHeight = windowHeight }
+                .onChange(of: geometry.size) { _, _ in
+                    cancelSpin()
+                    reelWindowHeight = windowHeight
                 }
             }
         }
@@ -136,20 +157,13 @@ struct ContentView: View {
     }
     
     private var headerView: some View {
-        VStack(spacing: 10) {
-            Text("YGO Shuffle")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundStyle(titleGradient)
-                .shadow(color: .black.opacity(0.3), radius: 2, x: 2, y: 2)
-            
-            Text("RULE GENERATOR")
-                .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                .foregroundColor(.white.opacity(0.9))
-                .tracking(3)
-        }
-        .padding(.top, 20)
+        Text("YGO Shuffle")
+            .font(.system(size: 28, weight: .bold, design: .rounded))
+            .foregroundStyle(titleGradient)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
     }
-    
+
     private var titleGradient: LinearGradient {
         LinearGradient(
             colors: [.yellow, .orange],
@@ -159,58 +173,59 @@ struct ContentView: View {
     }
     
     private var ruleListSelector: some View {
-        VStack(spacing: 10) {
-            HStack {
-                Image(systemName: "list.star")
-                    .foregroundColor(.yellow)
-                Text("Active Rule List:")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
-                Spacer()
-            }
-            
+        HStack(spacing: 8) {
             Menu {
-                ForEach(ruleLists) { ruleList in
-                    Button(action: {
-                        selectedRuleListID = ruleList.id
+                ForEach(ruleLists) { list in
+                    Button {
+                        selectedRuleListID = list.id
                         saveSelectedList()
-                        selectedRule = nil // Clear current selection when switching lists
-                    }) {
-                        HStack {
-                            Text(ruleList.name)
-                            if ruleList.id == selectedRuleListID {
-                                Image(systemName: "checkmark")
-                            }
+                        selectedRule = nil
+                    } label: {
+                        if list.id == selectedRuleListID {
+                            Label(list.name, systemImage: "checkmark")
+                        } else {
+                            Text(list.name)
                         }
                     }
                 }
             } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 10) {
+                    Image(systemName: "list.star").foregroundStyle(.yellow)
+                    VStack(alignment: .leading, spacing: 3) {
                         Text(currentRuleList.name)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
+                            .font(.system(size: 15, weight: .semibold))
+                            .lineLimit(1)
                         Text("\(currentRuleList.eligibleRules.count) of \(currentRuleList.rules.count) rules enabled")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
+                            .font(.system(size: 11))
+                            .foregroundStyle(.white.opacity(0.6))
+                            .lineLimit(1)
                     }
-                    Spacer()
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.7))
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.down").font(.caption2)
                 }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.1))
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                )
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12)
+                .frame(height: 58)
+                .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
             }
+            .accessibilityLabel("Active list: \(currentRuleList.name)")
+
+            Button { showingFilters = true } label: {
+                VStack(spacing: 3) {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.title3)
+                    Text("Filters").font(.system(size: 10, weight: .medium))
+                }
+                .foregroundStyle(.cyan)
+                .frame(width: 54, height: 58)
+                .background(.cyan.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+            }
+            .accessibilityLabel("Rule category filters")
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 16)
     }
-    
-    private var slotMachineContainer: some View {
+
+    private func slotMachineContainer(windowHeight: CGFloat) -> some View {
         NeonSpinnerView(
             rules: slotRules,
             offset: spinOffset,
@@ -219,79 +234,36 @@ struct ContentView: View {
             canSpin: !currentRuleList.eligibleRules.isEmpty,
             quickSpin: spinPreferences.quickSpinEnabled,
             revealID: revealID,
-            onSpin: pickRandomRule
+            onSpin: pickRandomRule,
+            windowHeight: windowHeight
         )
     }
 
-    private var controlButtons: some View {
-        HStack(spacing: 20) {
-            Button(action: { showingRuleLists.toggle() }) {
-                HStack {
-                    Image(systemName: "folder.badge.gearshape")
-                    Text("Manage Lists")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
-                .background(
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(Color.blue.opacity(0.8))
-                        .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
-                )
-            }
-            
-            Button(action: { showingHowToPlay.toggle() }) {
-                HStack {
-                    Image(systemName: "questionmark.circle")
-                    Text("How to Play")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
-                .background(
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(Color.green.opacity(0.8))
-                        .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
-                )
-            }
+    private var utilityControls: some View {
+        HStack(spacing: 6) {
+            utilityButton("Lists", icon: "folder.badge.gearshape") { showingRuleLists = true }
+            utilityButton("History", icon: "clock.arrow.circlepath") { showingHistory = true }
+            utilityButton("How to Play", icon: "questionmark.circle") { showingHowToPlay = true }
+            utilityButton("Settings", icon: "gearshape") { showingSettings = true }
         }
-        .padding(.horizontal)
-    }
-    
-    private var filterButton: some View {
-        Button(action: { showingFilters = true }) {
-            Label("Categories: \(currentRuleList.enabledCategories.count) of \(RuleCategory.allCases.count) enabled",
-                  systemImage: "line.3.horizontal.decrease.circle")
-                .font(.subheadline)
-                .foregroundColor(.yellow)
-        }
-        .padding(.horizontal)
+        .padding(.horizontal, 16)
     }
 
-    private var settingsButton: some View {
-        Button(action: { showingSettings = true }) {
-            Label("Spin Settings", systemImage: "gearshape")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
+    private func utilityButton(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 5) {
+                Image(systemName: icon).font(.system(size: 18))
+                Text(title)
+                    .font(.system(size: 10, weight: .medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .foregroundStyle(.white.opacity(0.85))
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 48)
+            .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
         }
-        .padding(.horizontal)
-    }
-
-    private var historyButton: some View {
-        Button(action: { showingHistory = true }) {
-            Label("Rule History", systemImage: "clock.arrow.circlepath")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
-                .background(
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(Color.purple.opacity(0.8))
-                )
-        }
-        .padding(.horizontal)
+        .buttonStyle(.plain)
     }
 
     // Pick random rule with slot machine animation
@@ -315,7 +287,8 @@ struct ContentView: View {
         spinFeedback.started(preferences: spinPreferences)
         
         let landingRule = outcome.didReroll ? RuleGenerator.rerollRule : outcome.rule
-        guard let reel = SpinReelPlan.make(from: rules, landingRule: landingRule, duration: duration) else {
+        guard let reel = SpinReelPlan.make(from: rules, landingRule: landingRule, duration: duration,
+                                           windowHeight: Double(reelWindowHeight)) else {
             cancelSpin()
             return
         }
