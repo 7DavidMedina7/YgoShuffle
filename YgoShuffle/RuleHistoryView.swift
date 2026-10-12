@@ -28,9 +28,11 @@ struct RuleHistoryView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 4)
+                        .listRowBackground(AppTheme.surface)
                     }
                 }
             }
+            .appPageStyle()
             .navigationTitle("Rule History")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

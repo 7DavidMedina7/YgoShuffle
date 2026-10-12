@@ -137,7 +137,7 @@ struct ContentView: View {
     private var headerView: some View {
         Text("YGO Shuffle")
             .font(.system(size: 28, weight: .bold, design: .rounded))
-            .foregroundStyle(.cyan)
+            .foregroundStyle(AppTheme.accent)
             .lineLimit(1)
             .minimumScaleFactor(0.8)
     }
@@ -160,7 +160,7 @@ struct ContentView: View {
                 }
             } label: {
                 HStack(spacing: 10) {
-                    Image(systemName: "list.star").foregroundStyle(.yellow)
+                    Image(systemName: "list.star").foregroundStyle(AppTheme.accent)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(currentRuleList.name)
                             .font(.system(size: 15, weight: .semibold))
@@ -176,7 +176,7 @@ struct ContentView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12)
                 .frame(height: 58)
-                .background(Color(red: 0.13, green: 0.18, blue: 0.28), in: RoundedRectangle(cornerRadius: 14))
+                .background(AppTheme.raisedSurface, in: RoundedRectangle(cornerRadius: 14))
             }
             .accessibilityLabel("Active list: \(currentRuleList.name)")
 
@@ -186,9 +186,9 @@ struct ContentView: View {
                         .font(.title3)
                     Text("Filters").font(.system(size: 10, weight: .medium))
                 }
-                .foregroundStyle(.cyan)
+                .foregroundStyle(AppTheme.accent)
                 .frame(width: 54, height: 58)
-                .background(Color(red: 0.09, green: 0.12, blue: 0.16), in: RoundedRectangle(cornerRadius: 14))
+                .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 14))
             }
             .accessibilityLabel("Rule category filters")
         }
@@ -211,10 +211,10 @@ struct ContentView: View {
 
     private var utilityControls: some View {
         HStack(spacing: 6) {
-            utilityButton("Lists", icon: "folder.badge.gearshape", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingRuleLists = true }
-            utilityButton("History", icon: "clock.arrow.circlepath", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingHistory = true }
-            utilityButton("How to Play", icon: "questionmark.circle", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingHowToPlay = true }
-            utilityButton("Settings", icon: "gearshape", color: Color(red: 0.09, green: 0.12, blue: 0.16), textColor: .cyan) { showingSettings = true }
+            utilityButton("Lists", icon: "folder.badge.gearshape", color: AppTheme.surface, textColor: AppTheme.accent) { showingRuleLists = true }
+            utilityButton("History", icon: "clock.arrow.circlepath", color: AppTheme.surface, textColor: AppTheme.accent) { showingHistory = true }
+            utilityButton("How to Play", icon: "questionmark.circle", color: AppTheme.surface, textColor: AppTheme.accent) { showingHowToPlay = true }
+            utilityButton("Settings", icon: "gearshape", color: AppTheme.surface, textColor: AppTheme.accent) { showingSettings = true }
         }
         .padding(.horizontal, 16)
     }

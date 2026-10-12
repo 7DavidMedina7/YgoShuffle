@@ -51,10 +51,11 @@ struct RuleListManagementView: View {
                                 Spacer()
                                 if ruleList.id == selectedListID {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
+                                        .foregroundColor(AppTheme.accent)
                                 }
                             }
                         }
+                        .listRowBackground(AppTheme.surface)
                         .swipeActions(edge: .trailing) {
                             Button("Delete", role: .destructive) {
                                 deleteRuleList(id: ruleList.id)
@@ -65,7 +66,7 @@ struct RuleListManagementView: View {
                             Button("Duplicate") {
                                 duplicateRuleList(id: ruleList.id)
                             }
-                            .tint(.blue)
+                            .tint(AppTheme.accent)
                         }
                         .contextMenu {
                             Button {
@@ -106,7 +107,9 @@ struct RuleListManagementView: View {
                 } footer: {
                     Text("Import a JSON file to add a new list. Press and hold a list to share it or save its JSON file.")
                 }
+                .listRowBackground(AppTheme.surface)
             }
+            .appPageStyle()
             .navigationTitle("Rule Lists")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

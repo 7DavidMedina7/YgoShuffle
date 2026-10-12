@@ -4,20 +4,14 @@ struct HowToPlayView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header
                     VStack(spacing: 10) {
                         Text("🎰 How to Play 🎰")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.yellow, .orange],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .foregroundStyle(AppTheme.accent)
                         
                         Text("YGO Shuffle")
                             .font(.system(size: 16, weight: .medium, design: .monospaced))
@@ -96,7 +90,7 @@ struct HowToPlayView: View {
                         
                         Text("Have fun dueling! 🔥")
                             .font(.headline)
-                            .foregroundColor(.orange)
+                            .foregroundColor(AppTheme.accent)
                         
                         Text("Version 1.0")
                             .font(.caption)
@@ -106,13 +100,14 @@ struct HowToPlayView: View {
                 }
                 .padding()
             }
-        }
-        .navigationTitle("How to Play")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Done") {
-                    dismiss()
+            .appPageStyle()
+            .navigationTitle("How to Play")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
                 }
             }
         }
@@ -122,7 +117,7 @@ struct HowToPlayView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(AppTheme.accent)
             
             Text(content)
                 .font(.system(size: 16))
@@ -132,8 +127,8 @@ struct HowToPlayView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.1))
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                .fill(AppTheme.surface)
+                .stroke(AppTheme.accent.opacity(0.25), lineWidth: 1)
         )
     }
 }

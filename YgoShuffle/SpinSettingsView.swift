@@ -15,6 +15,7 @@ struct SpinSettingsView: View {
                 } footer: {
                     Text("Sound effects respect your device’s silent mode. Haptics require a supported device.")
                 }
+                .listRowBackground(AppTheme.surface)
                 Section {
                     Toggle("Quick Spin", isOn: $preferences.quickSpinEnabled)
                 } header: {
@@ -22,6 +23,7 @@ struct SpinSettingsView: View {
                 } footer: {
                     Text("Shorten the spin from 2 seconds to 0.65 seconds, with a shorter re-roll pause.")
                 }
+                .listRowBackground(AppTheme.surface)
                 Section {
                     Toggle("Avoid Consecutive Duplicates", isOn: $preferences.avoidConsecutiveDuplicates)
                 } header: {
@@ -29,7 +31,9 @@ struct SpinSettingsView: View {
                 } footer: {
                     Text("Skip the last completed rule for this list when another enabled result is available. Uses saved history; clearing history resets this comparison.")
                 }
+                .listRowBackground(AppTheme.surface)
             }
+            .appPageStyle()
             .navigationTitle("Spin Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
