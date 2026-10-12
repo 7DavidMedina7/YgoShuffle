@@ -14,8 +14,8 @@ struct NeonSpinnerView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private let cyan = Color(red: 0.25, green: 0.9, blue: 1)
-    private let electricBlue = Color(red: 0.10, green: 0.45, blue: 1)
+    private let cyan = AppTheme.accent
+    private let electricBlue = AppTheme.electricBlue
     private var rerolling: Bool { isSpinning && selectedRule == "🎲 RE-ROLLING! 🎲" }
 
     var body: some View {
@@ -206,7 +206,8 @@ struct NeonSpinnerView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
                 }
-                .navigationTitle("Full Rule")
+                .appPageStyle()
+            .navigationTitle("Full Rule")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {

@@ -25,6 +25,7 @@ struct RulesManagementView: View {
                         newRule = ""
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(.black)
                     .disabled(newRule.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 Picker("Category", selection: $newCategory) {
@@ -34,7 +35,7 @@ struct RulesManagementView: View {
                 }
             }
             .padding()
-            .background(Color.gray.opacity(0.1))
+            .background(AppTheme.surface)
             .cornerRadius(12)
             .padding()
 
@@ -51,12 +52,13 @@ struct RulesManagementView: View {
                         Button {
                             editingRule = rule
                         } label: {
-                            Image(systemName: "pencil").foregroundColor(.blue)
+                            Image(systemName: "pencil").foregroundColor(AppTheme.accent)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Edit rule")
                     }
                     .padding(.vertical, 4)
+                    .listRowBackground(AppTheme.surface)
                 }
                 .onDelete { offsets in
                     ruleList.rules.remove(atOffsets: offsets)
@@ -68,6 +70,7 @@ struct RulesManagementView: View {
                 }
             }
         }
+        .appPageStyle()
         .navigationTitle(ruleList.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -117,6 +120,7 @@ private struct RuleEditorView: View {
                     TextField("Rule text", text: $rule.text, axis: .vertical)
                         .lineLimit(5...10)
                 }
+                .listRowBackground(AppTheme.surface)
                 Section {
                     Picker("Category", selection: $rule.category) {
                         ForEach(RuleCategory.allCases) { category in
@@ -124,7 +128,9 @@ private struct RuleEditorView: View {
                         }
                     }
                 }
+                .listRowBackground(AppTheme.surface)
             }
+            .appPageStyle()
             .navigationTitle("Edit Rule")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

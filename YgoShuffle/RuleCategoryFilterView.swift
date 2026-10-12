@@ -31,6 +31,7 @@ struct RuleCategoryFilterView: View {
                 } footer: {
                     Text("Only enabled categories are used when you spin. These filters are saved separately for each list.")
                 }
+                .listRowBackground(AppTheme.surface)
                 Section {
                     Button("Enable All Categories") {
                         var updated = ruleList
@@ -44,7 +45,9 @@ struct RuleCategoryFilterView: View {
                             .foregroundStyle(.orange)
                     }
                 }
+                .listRowBackground(AppTheme.surface)
             }
+            .appPageStyle()
             .navigationTitle("Rule Categories")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
