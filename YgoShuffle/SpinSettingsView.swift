@@ -32,6 +32,19 @@ struct SpinSettingsView: View {
                     Text("Skip the last completed rule for this list when another enabled result is available. Uses saved history; clearing history resets this comparison.")
                 }
                 .listRowBackground(AppTheme.surface)
+                Section {
+                    Link(destination: AppLinks.privacyPolicy) {
+                        Label("Privacy Policy", systemImage: "hand.raised")
+                    }
+                    Link(destination: AppLinks.support) {
+                        Label("Support", systemImage: "questionmark.circle")
+                    }
+                } header: {
+                    Text("Privacy & Support")
+                } footer: {
+                    Text("These links open GitHub in your browser.")
+                }
+                .listRowBackground(AppTheme.surface)
             }
             .appPageStyle()
             .navigationTitle("Spin Settings")

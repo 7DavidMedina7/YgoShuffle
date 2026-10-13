@@ -92,6 +92,9 @@ struct HowToPlayView: View {
                             .font(.headline)
                             .foregroundColor(AppTheme.accent)
                         
+                        Link("Privacy Policy", destination: AppLinks.privacyPolicy)
+                        Link("Support", destination: AppLinks.support)
+
                         Text("Version 1.0")
                             .font(.caption)
                             .foregroundColor(.secondary)
