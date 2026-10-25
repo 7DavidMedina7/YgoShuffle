@@ -8,20 +8,35 @@ enum DefaultRules {
             "Draw a card from the bottom of your deck.",
             "Draw two cards.",
             "Your opponent discards a random card from your hand.",
+            "Draw three cards.",
+            "Draw one card.",
+            "This turn, each time your opponent Special Summon a monster(s), draw 1 card.",
+            "This turn, each time your opponent Special Summons a monster(s) from the Deck and/or Extra Deck,immediately draw 1 card.",
+            "This turn, each time your opponent Normal or Special Summons a monster(s) from the hand, immediately draw 1 card.",
+            "This turn, each time your opponent Special Summons a monster(s) from any GY(s) or banishment, immediately draw 1 card.",
+            "This turn, each time a Spell Card is activated, draw 1 card.",
+            "This turn, each time a Trap Card is activated, draw 1 card.",
+            "Add a Monster card from your deck.",
+            "Add a Spell card from your deck.",
+            "Add a Trap card from your deck."
+
         ]),
         (.lifePoints, [
             "Swap LP with your opponent.",
             "All players lose 1500 LP.",
+            "All Players lose 3000 LP",
             "Restore your LP back to 8000.",
             "Pay half of your LP.",
+            "Half your opponents LP.",
             "Pay 500 LP for each Spell and Trap on the field.",
-            "For the rest of the turn, you must pay 300 LP to activate cards or effects.",
-            "For the rest of the turn, you must pay 700 LP each time you Normal or Special Summon.",
+            "For the rest of the turn, you must pay 500 LP to activate cards or effects.",
+            "For the rest of the turn, you must pay 1000 LP each time you Normal or Special Summon.",
         ]),
         (.battle, [
             "All of your monsters can attack directly until the end of this turn.",
             "You must banish 10 cards from the top of your deck each time you declare an attack directly with a monster you control.",
             "Skip your Battle phase.",
+            "This turn, the ATK and DEF of all monsters are swapped."
         ]),
         (.restrictions, [
             "You cannot Special Summon cards from your Extra Deck for the rest of the turn.",
@@ -30,6 +45,18 @@ enum DefaultRules {
             "You cannot activate Spells or Traps for the rest of the turn.",
             "Skip your Main Phase 1.",
             "Skip your Main Phase 2.",
+            "If a card(s) is send from the Deck to the GY: Target 1 card in either player's GY; Shuffle it into the Deck. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Neither player can send cards from the Deck to the GY. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Any monster sent to the GY is banished instead. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Any spell card sent to the GY is banished instead. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Any trap card sent to the GY is banished instead. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Neither player can Summon more than two times per turn. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Negate any card effect that would move a card in the GY to a different place. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Each player can only control 1 Attribute of monster. Send all other face-up monsters they control to the GY. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Each player can only control 1 monster of each Type. If a player controls 2 or more monsters of the same type, they must send some to the GY so they control no more than 1 monster of that Type. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Each player can only control 1 Type of monster. Send all other face-up monsters they control to the GY. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Neither player can add cards from their Deck to their hand except by drawing them. This effect is continous and ends during the End Phase of your opponent's 2nd turn."
+
         ]),
         (.monsters, [
             "If you have less LP than your opponent, special summon one monster from your hand to the field, ignoring summoning conditions.",
@@ -85,9 +112,15 @@ enum DefaultRules {
             "Banish all cards in your GY.",
             "Skip your opponents' next turn.",
             "It immediately becomes the End Phase.",
-            "Negate the effects of all face-up monsters while they are face-up on the field (but their effects can still be activated). This effect is continous and ends during the End Phase of your opponent's 3rd turn.",
-            "Monsters that are banished, as well as monsters in the GY, cannot activate their effects. This effect is continous and ends during the End Phase of your opponent's 3rd turn.",
-            "Both players must Set Spell Cards before activating them, and cannot activate them until their next turn after Setting them. This effect is continous and ends during the End Phase of your opponent's 3rd turn."
+            "Negate the effects of all face-up monsters while they are face-up on the field (but their effects can still be activated). This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Monsters that are banished, as well as monsters in the GY, cannot activate their effects. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Both players must Set Spell Cards before activating them, and cannot activate them until their next turn after Setting them. This effect is continous and ends during the End Phase of your opponent's 2nd turn.",
+            "Shuffle all extra deck monsters from field, GY, and banish.",
+            "Tribute all monsters on the field.",
+            "All monsters on the field become continuous spells. If the spell/trap zones are full, send the rest to the GY.",
+            "Tribute summon a monster from your hand by using monsters in your hand and/or your opponent's field.",
+            "Roll a die to select a card in hand; add the remaining copies from your hand, deck, and GY with that card's name.",
+            "Roll a die to select a card in hand; send that card to the GY."
         ]),
     ]
 

@@ -93,6 +93,7 @@ struct ContentView: View {
         }
         .onAppear {
             selectedRuleListID = RuleListPersistence.selectedID(in: ruleLists)
+            installUpdatedDefaultRules()
             saveRuleLists()
         }
         .onChange(of: selectedRuleListID) { _, _ in
@@ -323,6 +324,33 @@ struct ContentView: View {
         revealID = UUID()
     }
     
+    // Refresh whenever the bundled rules change, keeping previously saved lists intact.
+    private func installUpdatedDefaultRules() {
+        let revisionKey = "installedDefaultRulesSnapshot"
+        let defaults = UserDefaults.standard
+        let bundled = DefaultRules.rules
+        guard defaults.stringArray(forKey: revisionKey) != bundled else { return }
+        if let index = ruleLists.firstIndex(where: { $0.name == "Default Rules" }) {
+            if ruleLists[index].rules.map(\.text) != bundled {
+                let wasSelected = selectedRuleListID == ruleLists[index].id
+                var backupName = "Default Rules (Previous)"
+                var suffix = 2
+                while ruleLists.contains(where: { $0.name == backupName }) {
+                    backupName = "Default Rules (Previous \(suffix))"
+                    suffix += 1
+                }
+                ruleLists[index].name = backupName
+                let updated = RuleList(name: "Default Rules", rules: bundled)
+                ruleLists.append(updated)
+                if wasSelected { selectedRuleListID = updated.id }
+            }
+        } else {
+            ruleLists.append(RuleList(name: "Default Rules", rules: bundled))
+        }
+        saveRuleLists()
+        defaults.set(bundled, forKey: revisionKey)
+    }
+
     // Save to UserDefaults
     func saveRuleLists() {
         if let encoded = try? JSONEncoder().encode(ruleLists) {

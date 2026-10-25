@@ -45,11 +45,17 @@ struct RuleHistoryView: View {
                     }
                     .disabled(entries.isEmpty)
                 }
-                ToolbarItem(placement: .bottomBar) {
-                    Text("Your last \(RuleHistory.maximumEntries) completed spins")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Text("Your last \(RuleHistory.maximumEntries) completed spins")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(AppTheme.background)
             }
             .confirmationDialog("Clear all rule history?", isPresented: $showingClearConfirmation, titleVisibility: .visible) {
                 Button("Clear History", role: .destructive) { onClear() }
