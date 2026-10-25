@@ -14,7 +14,7 @@ struct ContentView: View {
            !decodedLists.isEmpty {
             return decodedLists
         }
-        return [RuleList(name: "Default Rules", rules: DefaultRules.rules)]
+        return [RuleList(name: "Advanced Format", rules: DefaultRules.rules)]
     }()
     
     @State private var selectedRuleListID: UUID?
@@ -329,23 +329,27 @@ struct ContentView: View {
         let revisionKey = "installedDefaultRulesSnapshot"
         let defaults = UserDefaults.standard
         let bundled = DefaultRules.rules
+        if !ruleLists.contains(where: { $0.name == "Advanced Format" }),
+           let index = ruleLists.firstIndex(where: { $0.name == "Default Rules" }) {
+            ruleLists[index].name = "Advanced Format"
+        }
         guard defaults.stringArray(forKey: revisionKey) != bundled else { return }
-        if let index = ruleLists.firstIndex(where: { $0.name == "Default Rules" }) {
+        if let index = ruleLists.firstIndex(where: { $0.name == "Advanced Format" }) {
             if ruleLists[index].rules.map(\.text) != bundled {
                 let wasSelected = selectedRuleListID == ruleLists[index].id
-                var backupName = "Default Rules (Previous)"
+                var backupName = "Advanced Format (Previous)"
                 var suffix = 2
                 while ruleLists.contains(where: { $0.name == backupName }) {
-                    backupName = "Default Rules (Previous \(suffix))"
+                    backupName = "Advanced Format (Previous \(suffix))"
                     suffix += 1
                 }
                 ruleLists[index].name = backupName
-                let updated = RuleList(name: "Default Rules", rules: bundled)
+                let updated = RuleList(name: "Advanced Format", rules: bundled)
                 ruleLists.append(updated)
                 if wasSelected { selectedRuleListID = updated.id }
             }
         } else {
-            ruleLists.append(RuleList(name: "Default Rules", rules: bundled))
+            ruleLists.append(RuleList(name: "Advanced Format", rules: bundled))
         }
         saveRuleLists()
         defaults.set(bundled, forKey: revisionKey)
